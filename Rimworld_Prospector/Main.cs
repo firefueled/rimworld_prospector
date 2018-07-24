@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Harmony;
+﻿using Harmony;
 using RimWorld;
 using System.Reflection;
 using Verse;
+using Verse.AI;
 
 namespace Rimworld_Prospector
 {
@@ -19,45 +16,51 @@ namespace Rimworld_Prospector
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
 
-        [HarmonyPatch(typeof(WindowStack))]
-        [HarmonyPatch("Add")]
-        [HarmonyPatch(new Type[] { typeof(Window) })]
-        class PatchWindow
-        {
-            static void Prefix(Window window)
-            {
-                Log.Warning("Hello RimWorld");
-            }
-        }
-
-        [HarmonyPatch(typeof(Mineable), "Destroy")]
-        class PatchDestroy
-        {
-            static void Prefix(DestroyMode mode)
-            {
-                Log.Warning("Destroy: " + mode.ToString());
-            }
-        }
-
-        [HarmonyPatch(typeof(Mineable), "PreApplyDamage")]
-        //, new Type[] { typeof(DamageInfo), typeof(bool) }
-        class PatchPreApplyDamage
-        {
-            static void Prefix(DamageInfo dinfo, out bool absorbed)
-            {
-                Log.Warning("PreApplyDamage: " + dinfo.ToString());
-                absorbed = false;
-            }
-        }
-
+        // A mining operation has ended
         [HarmonyPatch(typeof(Mineable), "DestroyMined")]
         class PatchDestroyMined
         {
-            static void Prefix(Pawn pawn)
+            static void Postfix(Pawn pawn)
             {
-                Log.Warning("DestroyMined: " + pawn.ToString());
+                // A cell grid around the mining pawn covering an area two cells away from it
+                var cellsAround = GenAdj.CellsOccupiedBy(pawn.Position, pawn.Rotation, new IntVec2(5, 5));
+                Designator_Mine dm = new Designator_Mine();
+
+                foreach (var cell in cellsAround)
+                {
+                    // Find out what Thing, of the Bulding, category is on the cell
+                    var thing = pawn.Map.thingGrid.ThingAt(cell, ThingCategory.Building);
+                    if (
+                            thing != null &&
+                            IsOre(thing.def) &&
+                            HasntBeenDesignatedYet(dm, cell) &&
+                            CanReach(pawn, cell)
+                       )
+                    {
+                        // "Order" the cell to be mined
+                        dm.DesignateSingleCell(cell);
+                    }
+                }
+            }
+
+            // Wether an mine "Order" hassn't been placed on the cell yet
+            static bool HasntBeenDesignatedYet(Designator_Mine dm, IntVec3 cell)
+            {
+                return dm.CanDesignateCell(cell).Accepted;
+            }
+
+            // Wether the Thing is a rock with mineable resources
+            static bool IsOre(ThingDef def)
+            {
+                return def != null && def.building != null && def.building.isResourceRock;
+            }
+
+            // Wether the pawn can reach the cell (Rock) to the point of being able to touch it,
+            // instead of standing on it
+            static bool CanReach(Pawn pawn, IntVec3 cell)
+            {
+                return pawn.CanReach(cell, PathEndMode.Touch, Danger.None);
             }
         }
-
     }
 }
