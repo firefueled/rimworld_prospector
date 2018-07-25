@@ -1,22 +1,16 @@
 ﻿using Harmony;
+using HugsLib;
 using RimWorld;
-using System.Reflection;
 using Verse;
 using Verse.AI;
 
 namespace Rimworld_Prospector
 {
     // A mining operation has ended
-    [StaticConstructorOnStartup]
     [HarmonyPatch(typeof(Mineable), "DestroyMined")]
-    class DoneMiningRock
+    class DoneMiningRock : ModBase
     {
-        // this static constructor runs to create a HarmonyInstance and install a patch.
-        static DoneMiningRock()
-        {
-            var harmony = HarmonyInstance.Create("com.github.firefueled.rimworld_prospector");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
-        }
+        public override string ModIdentifier => "com.firefueled.rimworld_prospector";
 
         static void Postfix(Pawn pawn)
         {
