@@ -1,6 +1,8 @@
 ﻿using Harmony;
 using HugsLib;
 using RimWorld;
+using System;
+using System.Collections.Generic;
 using Verse;
 using Verse.AI;
 
@@ -10,9 +12,45 @@ namespace Rimworld_Prospector
     [HarmonyPatch(typeof(Mineable), "DestroyMined")]
     class DoneMiningRock : ModBase
     {
+        private static bool hasPackMule;
+        private static Pawn packMule;
+        public static List<Thing> minedOre;
+
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
 
         static void Postfix(Pawn pawn)
+        {
+            DeisgnateCellsAround(pawn);
+            if (hasPackMule && IsPackMuleAround())
+            {
+                StoreOreInPackMule();
+            }
+        }
+
+        private static void StoreOreInPackMule()
+        {
+            if (IsPackMuleFull())
+            {
+                SendPackMuleHome();
+            }
+        }
+
+        private static bool IsPackMuleAround()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void SendPackMuleHome()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static bool IsPackMuleFull()
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void DeisgnateCellsAround(Pawn pawn)
         {
             // A cell grid around the mining pawn covering an area two cells away from it
             var cellsAround = GenAdj.CellsOccupiedBy(pawn.Position, pawn.Rotation, new IntVec2(5, 5));
@@ -35,7 +73,7 @@ namespace Rimworld_Prospector
             }
         }
 
-        // Wether an mine "Order" hassn't been placed on the cell yet
+        // Wether an mine "Order" hasn't been placed on the cell yet
         static bool HasntBeenDesignatedYet(Designator_Mine dm, IntVec3 cell)
         {
             return dm.CanDesignateCell(cell).Accepted;
