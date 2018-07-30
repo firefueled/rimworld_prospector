@@ -1,8 +1,8 @@
 ﻿using Harmony;
 using HugsLib;
 using RimWorld;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using Verse;
 using Verse.AI;
 
@@ -14,21 +14,64 @@ namespace Rimworld_Prospector
     {
         private static bool hasPackMule;
         private static Pawn packMule;
-        public static List<Thing> minedOre;
+        private static Pawn prospector;
+        private static List<LocalTargetInfo> minedOre;
 
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
 
-        static void Postfix(Pawn pawn)
+        static void Postfix(Building __instance, Pawn pawn)
         {
+            prospector = pawn;
+            minedOre = new List<LocalTargetInfo>();
+
             DeisgnateCellsAround(pawn);
-            if (hasPackMule && IsPackMuleAround())
+
+            // Find the pack mule if it exists            
+            foreach (var p in pawn.Map.mapPawns.PawnsInFaction(pawn.Faction))
+            {
+                if (p.playerSettings.master == pawn)
+                {
+                    hasPackMule = true;
+                    packMule = p;
+                }
+            }
+
+            if (hasPackMule)
+            {
+                AddMinedOreAt(ref minedOre, __instance.Position);
+                Log.Message("packMule: " + packMule.Name);
+            }
+            
+            if (hasPackMule)
             {
                 StoreOreInPackMule();
             }
         }
 
+        private static void AddMinedOreAt(ref List<LocalTargetInfo> minedOre, IntVec3 position)
+        {
+            var thing = prospector.Map.thingGrid.ThingAt(position, ThingCategory.Item);
+            if (thing.def == ThingDefOf.Steel ||
+                thing.def == ThingDefOf.Component ||
+                thing.def == ThingDefOf.Gold ||
+                thing.def == ThingDefOf.Plasteel ||
+                thing.def == ThingDefOf.Silver ||
+                thing.def == ThingDefOf.Uranium)
+            {
+                minedOre.Add(thing);
+            }
+        }
+
         private static void StoreOreInPackMule()
         {
+            prospector.jobs.debugLog = true;
+            var job = new Job(JobDefOf.GiveToPackAnimal, minedOre.First(), new LocalTargetInfo(packMule))
+            {
+                count = 35
+            };
+
+            prospector.jobs.jobQueue.EnqueueFirst(job);
+
             if (IsPackMuleFull())
             {
                 SendPackMuleHome();
@@ -37,17 +80,21 @@ namespace Rimworld_Prospector
 
         private static bool IsPackMuleAround()
         {
-            throw new NotImplementedException();
+            return CanReach(prospector, packMule.Position);
         }
 
         private static void SendPackMuleHome()
         {
-            throw new NotImplementedException();
+            Log.Message("SendPackMuleHome");
+            var job1 = new Job(JobDefOf.Goto, minedOre.First(), new LocalTargetInfo(new IntVec3(90, 0, 90)));
+            //var job2 = new Job(JobDefOf.DropEquipment, new LocalTargetInfo(packMule));
+            packMule.jobs.jobQueue.EnqueueFirst(job1);
+            //packMule.jobs.jobQueue.EnqueueLast(job2);
         }
 
         private static bool IsPackMuleFull()
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         private static void DeisgnateCellsAround(Pawn pawn)
@@ -58,11 +105,11 @@ namespace Rimworld_Prospector
 
             foreach (var cell in cellsAround)
             {
-                // Find out what Thing, of the Bulding, category is on the cell
+                // Find out what Thing is on the cell
                 var thing = pawn.Map.thingGrid.ThingAt(cell, ThingCategory.Building);
                 if (
                         thing != null &&
-                        IsOre(thing.def) &&
+                        IsResourceRock(thing.def) &&
                         HasntBeenDesignatedYet(dm, cell) &&
                         CanReach(pawn, cell)
                     )
@@ -80,7 +127,7 @@ namespace Rimworld_Prospector
         }
 
         // Wether the Thing is a rock with mineable resources
-        static bool IsOre(ThingDef def)
+        static bool IsResourceRock(ThingDef def)
         {
             return def != null && def.building != null && def.building.isResourceRock;
         }
