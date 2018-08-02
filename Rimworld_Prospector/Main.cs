@@ -77,19 +77,18 @@ namespace Rimworld_Prospector
                 SendPackMuleHome();
             }
         }
+        private static void SendPackMuleHome()
+        {
+            Log.Message("SendPackMuleHome");
+
+            var job = new Job(JobDriver_SendPackAnimalHome.DefOf);
+            packMule.jobs.jobQueue.EnqueueFirst(job);
+        }
+
 
         private static bool IsPackMuleAround()
         {
             return CanReach(prospector, packMule.Position);
-        }
-
-        private static void SendPackMuleHome()
-        {
-            Log.Message("SendPackMuleHome");
-            var job1 = new Job(JobDefOf.Goto, minedOre.First(), new LocalTargetInfo(new IntVec3(90, 0, 90)));
-            //var job2 = new Job(JobDefOf.DropEquipment, new LocalTargetInfo(packMule));
-            packMule.jobs.jobQueue.EnqueueFirst(job1);
-            //packMule.jobs.jobQueue.EnqueueLast(job2);
         }
 
         private static bool IsPackMuleFull()

@@ -53,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JobDriver_LoadOrePackAnimal.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -60,9 +61,15 @@
     <Content Include="ModStructure\About\About.xml" />
     <Content Include="ModStructure\About\preview.png" />
     <Content Include="ModStructure\Assemblies\%24HugsLibChecker.dll" />
+    <Content Include="ModStructure\Defs\Prospector_JobDriver_SendPackAnimalHome.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

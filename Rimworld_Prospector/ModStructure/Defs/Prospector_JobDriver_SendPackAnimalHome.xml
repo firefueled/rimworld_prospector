@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <JobDef>
+    <defName>Prospector_JobDriver_SendPackAnimalHome</defName>
+    <driverClass>Rimworld_Prospector.JobDriver_SendPackAnimalHome</driverClass>
+    <reportString>prospecting ore.</reportString>
+  </JobDef>
+</Defs>
