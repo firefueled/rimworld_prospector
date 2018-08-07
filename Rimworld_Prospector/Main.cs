@@ -1,8 +1,13 @@
-﻿using Harmony;
+﻿using System;
+using Harmony;
 using HugsLib;
 using RimWorld;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading;
+using HugsLib.Utils;
+using Rimworld_Prospector.Properties;
 using Verse;
 using Verse.AI;
 
@@ -10,24 +15,31 @@ namespace Rimworld_Prospector
 {
     // A mining operation has ended
     [HarmonyPatch(typeof(Mineable), "DestroyMined")]
-    class DoneMiningRock : ModBase
+    internal class DoneMiningRock : ModBase
     {
         private static bool hasPackMule;
         private static Pawn packMule;
         private static Pawn prospector;
-        private static List<LocalTargetInfo> minedOre;
+        private static List<Thing> minedOre;
+        public static WorldDataStore uwom;
+        private const int MAX_GIVE_JOB_WAIT = 10000;
 
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
 
-        static void Postfix(Building __instance, Pawn pawn)
+        public override void WorldLoaded()
+        {
+            uwom = UtilityWorldObjectManager.GetUtilityWorldObject<WorldDataStore>();
+        }
+
+        private static void Postfix(Building __instance, Pawn pawn)
         {
             prospector = pawn;
-            minedOre = new List<LocalTargetInfo>();
+            minedOre = new List<Thing>();
 
             DeisgnateCellsAround(pawn);
 
             // Find the pack mule if it exists            
-            foreach (var p in pawn.Map.mapPawns.PawnsInFaction(pawn.Faction))
+            foreach (Pawn p in pawn.Map.mapPawns.PawnsInFaction(pawn.Faction))
             {
                 if (p.playerSettings.master == pawn)
                 {
@@ -35,22 +47,18 @@ namespace Rimworld_Prospector
                     packMule = p;
                 }
             }
-
+            
             if (hasPackMule)
             {
                 AddMinedOreAt(ref minedOre, __instance.Position);
                 Log.Message("packMule: " + packMule.Name);
-            }
-            
-            if (hasPackMule)
-            {
                 StoreOreInPackMule();
             }
         }
 
-        private static void AddMinedOreAt(ref List<LocalTargetInfo> minedOre, IntVec3 position)
+        private static void AddMinedOreAt(ref List<Thing> minedOre, IntVec3 position)
         {
-            var thing = prospector.Map.thingGrid.ThingAt(position, ThingCategory.Item);
+            Thing thing = prospector.Map.thingGrid.ThingAt(position, ThingCategory.Item);
             if (thing.def == ThingDefOf.Steel ||
                 thing.def == ThingDefOf.Component ||
                 thing.def == ThingDefOf.Gold ||
@@ -62,50 +70,16 @@ namespace Rimworld_Prospector
             }
         }
 
-        private static void StoreOreInPackMule()
-        {
-            prospector.jobs.debugLog = true;
-            var job = new Job(JobDefOf.GiveToPackAnimal, minedOre.First(), new LocalTargetInfo(packMule))
-            {
-                count = 35
-            };
-
-            prospector.jobs.jobQueue.EnqueueFirst(job);
-
-            if (IsPackMuleFull())
-            {
-                SendPackMuleHome();
-            }
-        }
-        private static void SendPackMuleHome()
-        {
-            Log.Message("SendPackMuleHome");
-
-            var job = new Job(JobDriver_SendPackAnimalHome.DefOf);
-            packMule.jobs.jobQueue.EnqueueFirst(job);
-        }
-
-
-        private static bool IsPackMuleAround()
-        {
-            return CanReach(prospector, packMule.Position);
-        }
-
-        private static bool IsPackMuleFull()
-        {
-            return true;
-        }
-
         private static void DeisgnateCellsAround(Pawn pawn)
         {
             // A cell grid around the mining pawn covering an area two cells away from it
             var cellsAround = GenAdj.CellsOccupiedBy(pawn.Position, pawn.Rotation, new IntVec2(5, 5));
-            Designator_Mine dm = new Designator_Mine();
+            var dm = new Designator_Mine();
 
-            foreach (var cell in cellsAround)
+            foreach (IntVec3 cell in cellsAround)
             {
                 // Find out what Thing is on the cell
-                var thing = pawn.Map.thingGrid.ThingAt(cell, ThingCategory.Building);
+                Thing thing = pawn.Map.thingGrid.ThingAt(cell, ThingCategory.Building);
                 if (
                         thing != null &&
                         IsResourceRock(thing.def) &&
@@ -119,21 +93,48 @@ namespace Rimworld_Prospector
             }
         }
 
+        private static void StoreOreInPackMule()
+        {
+            var giveJob = new Job(JobDriver_GiveToPackAnimalDone.DefOf, minedOre.Last(), packMule)
+            {
+                count = 35
+            };
+            prospector.jobs.jobQueue.EnqueueFirst(giveJob);
+            
+            var sendPackAnimalWorker = new BackgroundWorker();
+            sendPackAnimalWorker.DoWork += WaitAndSendPackAnimal;
+            sendPackAnimalWorker.RunWorkerAsync(giveJob);
+        }
+
+        private static void WaitAndSendPackAnimal(object sender, DoWorkEventArgs e)
+        {
+            DateTime starTime = DateTime.Now;
+            while (!uwom.isGiveJobDone && (DateTime.Now - starTime).Milliseconds < MAX_GIVE_JOB_WAIT)
+            {
+                Thread.Sleep(250);
+            }
+            
+            Log.Message("job done maybe");
+            uwom.isGiveJobDone = false;
+            var packJob = new Job(JobDriver_SendPackAnimalHome.DefOf);
+            packMule.jobs.jobQueue.EnqueueFirst(packJob);
+        }
+
         // Wether an mine "Order" hasn't been placed on the cell yet
-        static bool HasntBeenDesignatedYet(Designator_Mine dm, IntVec3 cell)
+        private static bool HasntBeenDesignatedYet(Designator dm, IntVec3 cell)
         {
             return dm.CanDesignateCell(cell).Accepted;
         }
 
         // Wether the Thing is a rock with mineable resources
-        static bool IsResourceRock(ThingDef def)
+        private static bool IsResourceRock(ThingDef def)
         {
-            return def != null && def.building != null && def.building.isResourceRock;
+            return def?.building != null && def.building.isResourceRock;
         }
 
         // Wether the pawn can reach the cell (Rock) to the point of being able to touch it,
         // instead of standing on it
-        static bool CanReach(Pawn pawn, IntVec3 cell)
+        private static bool CanReach(Pawn pawn, IntVec3 cell)
         {
             return pawn.CanReach(cell, PathEndMode.Touch, Danger.None);
         }

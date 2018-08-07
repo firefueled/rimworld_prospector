@@ -5,4 +5,9 @@
     <driverClass>Rimworld_Prospector.JobDriver_SendPackAnimalHome</driverClass>
     <reportString>prospecting ore.</reportString>
   </JobDef>
+  <JobDef>
+    <defName>Prospector_JobDriver_GiveToPackAnimalDone</defName>
+    <driverClass>Rimworld_Prospector.JobDriver_GiveToPackAnimalDone</driverClass>
+    <reportString>prospecting ore.</reportString>
+  </JobDef>
 </Defs>

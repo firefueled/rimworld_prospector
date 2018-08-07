@@ -53,15 +53,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JobDriver_LoadOrePackAnimal.cs" />
+    <Compile Include="JobDriver_GiveToPackAnimalDone.cs" />
+    <Compile Include="JobDriver_SendPackAnimalHome.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WorldDataStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ModStructure\About\About.xml" />
     <Content Include="ModStructure\About\preview.png" />
     <Content Include="ModStructure\Assemblies\%24HugsLibChecker.dll" />
-    <Content Include="ModStructure\Defs\Prospector_JobDriver_SendPackAnimalHome.xml" />
+    <Content Include="ModStructure\Defs\Prospector_JobDrivers.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
