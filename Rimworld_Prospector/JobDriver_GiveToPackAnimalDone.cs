@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using HugsLib.Utils;
-using Rimworld_Prospector.Properties;
 using Verse;
 using Verse.AI;
 using RimWorld;
@@ -14,8 +13,7 @@ namespace Rimworld_Prospector
     public class JobDriver_GiveToPackAnimalDone : JobDriver_GiveToPackAnimal
     {
         public static readonly JobDef DefOf = DefDatabase<JobDef>.GetNamed("Prospector_JobDriver_GiveToPackAnimalDone");
-        private readonly WorldDataStore uwom = UtilityWorldObjectManager.GetUtilityWorldObject<WorldDataStore>();
-        
+
         protected override IEnumerable<Toil> MakeNewToils()
         {
             foreach (Toil toil in base.MakeNewToils())
@@ -23,7 +21,10 @@ namespace Rimworld_Prospector
                 yield return toil;
             }
             
-            yield return Toils_General.Do(() => DoneMiningRock.uwom.isGiveJobDone = true);
+            yield return Toils_General.Do(() =>
+            {
+                DoneMiningRock.dataStore.GiveJobDoneTracker.SetDone(pawn, job);
+            });
         }
     }
 }

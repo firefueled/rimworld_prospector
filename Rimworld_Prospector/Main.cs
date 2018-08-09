@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using Harmony;
 using HugsLib;
 using RimWorld;
@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using HugsLib.Utils;
-using Rimworld_Prospector.Properties;
 using Verse;
 using Verse.AI;
 
@@ -21,17 +20,17 @@ namespace Rimworld_Prospector
         private static Pawn packMule;
         private static Pawn prospector;
         private static List<Thing> minedOre;
-        public static WorldDataStore uwom;
+        public static WorldDataStore dataStore;
         private const int MAX_GIVE_JOB_WAIT = 10000;
 
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
 
         public override void WorldLoaded()
         {
-            uwom = UtilityWorldObjectManager.GetUtilityWorldObject<WorldDataStore>();
+            dataStore = UtilityWorldObjectManager.GetUtilityWorldObject<WorldDataStore>();
         }
 
-        private static void Postfix(Building __instance, Pawn pawn)
+        private static void Postfix(Thing __instance, Pawn pawn)
         {
             prospector = pawn;
             minedOre = new List<Thing>();
@@ -95,27 +94,38 @@ namespace Rimworld_Prospector
 
         private static void StoreOreInPackMule()
         {
-            var giveJob = new Job(JobDriver_GiveToPackAnimalDone.DefOf, minedOre.Last(), packMule)
+//            if (!HasEnoughOreToPack()) return;
+
+//            foreach (var ore in oreToPack)
+//            {
+            var giveJob = new Job(JobDriver_GiveToPackAnimalDone.DefOf, minedOre.First(), packMule)
             {
                 count = 35
             };
+            dataStore.GiveJobDoneTracker.AddJob(prospector, giveJob);
             prospector.jobs.jobQueue.EnqueueFirst(giveJob);
             
             var sendPackAnimalWorker = new BackgroundWorker();
             sendPackAnimalWorker.DoWork += WaitAndSendPackAnimal;
             sendPackAnimalWorker.RunWorkerAsync(giveJob);
+//            }
         }
 
         private static void WaitAndSendPackAnimal(object sender, DoWorkEventArgs e)
         {
             DateTime starTime = DateTime.Now;
-            while (!uwom.isGiveJobDone && (DateTime.Now - starTime).Milliseconds < MAX_GIVE_JOB_WAIT)
+            var job = (Job) e.Argument;
+            var isGiveJobDone = dataStore.GiveJobDoneTracker.IsDone(prospector, job);
+            while (!isGiveJobDone && (DateTime.Now - starTime).Milliseconds < MAX_GIVE_JOB_WAIT)
             {
                 Thread.Sleep(250);
+                isGiveJobDone = dataStore.GiveJobDoneTracker.IsDone(prospector, job);
             }
+
+            dataStore.GiveJobDoneTracker.RemoveJob(prospector, job);
             
-            Log.Message("job done maybe");
-            uwom.isGiveJobDone = false;
+            if (!isGiveJobDone) return;
+
             var packJob = new Job(JobDriver_SendPackAnimalHome.DefOf);
             packMule.jobs.jobQueue.EnqueueFirst(packJob);
         }

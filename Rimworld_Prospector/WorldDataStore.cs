@@ -1,20 +1,21 @@
-﻿using HugsLib.Utils;
+﻿using System.Collections.Generic;
+using HugsLib.Utils;
 using Verse;
 
-namespace Rimworld_Prospector.Properties
+namespace Rimworld_Prospector
 {
     public class WorldDataStore : UtilityWorldObject
     {
-        public bool isGiveJobDone;
+        public GiveJobDoneTracker GiveJobDoneTracker;
 
         public override void PostAdd() {
             base.PostAdd();
-            isGiveJobDone = false;
+            GiveJobDoneTracker = new GiveJobDoneTracker();
         }
 
         public override void ExposeData() {
             base.ExposeData();
-            Scribe_Values.Look(ref isGiveJobDone, "isGiveJobDone", false);
+            Scribe_Values.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker");
         }
     }
 }
