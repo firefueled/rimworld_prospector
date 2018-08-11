@@ -4,6 +4,9 @@ using Verse.AI;
 
 namespace Rimworld_Prospector
 {
+    /**
+     * Helps keep track of the GivToPackAnimal Jobs that hasn't ended yet, and when it does so
+     */
     public class GiveJobDoneTracker
     {
         private readonly Dictionary<string, JobDoneWrapper> Tracker;

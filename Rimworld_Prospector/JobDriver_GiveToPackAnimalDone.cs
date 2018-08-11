@@ -10,6 +10,9 @@ namespace Rimworld_Prospector
 {
     // ReSharper disable once InconsistentNaming
     // ReSharper disable once ClassNeverInstantiated.Global
+    /**
+     * Does the same as the original and then tells a tracker that the Job has ended
+     */
     public class JobDriver_GiveToPackAnimalDone : JobDriver_GiveToPackAnimal
     {
         public static readonly JobDef DefOf = DefDatabase<JobDef>.GetNamed("Prospector_JobDriver_GiveToPackAnimalDone");
@@ -23,6 +26,7 @@ namespace Rimworld_Prospector
             
             yield return Toils_General.Do(() =>
             {
+                DoneMiningRock.dataStore.MinedOre.Remove(TargetThingA);
                 DoneMiningRock.dataStore.GiveJobDoneTracker.SetDone(pawn, job);
             });
         }

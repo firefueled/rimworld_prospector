@@ -9,6 +9,9 @@ namespace Rimworld_Prospector
 {
     // ReSharper disable once InconsistentNaming
     // ReSharper disable once ClassNeverInstantiated.Global
+    /**
+     * Sends a pack animal to a pre-determined spot and have it dump everything it's carrying there
+     */
     public class JobDriver_SendPackAnimalHome : JobDriver
     {
         protected override IEnumerable<Toil> MakeNewToils()
