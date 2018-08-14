@@ -16,16 +16,17 @@ namespace Rimworld_Prospector
          */
         public List<Thing> MinedOre;
 
-        public override void PostAdd() {
-            base.PostAdd();
-            GiveJobDoneTracker = new GiveJobDoneTracker();
+        public override void SpawnSetup()
+        {
+            base.SpawnSetup();
             MinedOre = new List<Thing>();
+            GiveJobDoneTracker = new GiveJobDoneTracker();
         }
 
         public override void ExposeData() {
             base.ExposeData();
-            Scribe_Values.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker2");
-            Scribe_Values.Look(ref MinedOre, "MinedOre2");
+            Scribe_Values.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker");
+            Scribe_Values.Look(ref MinedOre, "MinedOre");
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Rimworld_Prospector
         private static Pawn prospector;
         public static WorldDataStore DataStore;
         public static ModLogger Log; 
-        private const int MaxGiveJobWait = 10000;
+        private const int MaxGiveJobWait = 30000;
 
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
 
@@ -71,7 +71,6 @@ namespace Rimworld_Prospector
                 t.def == ThingDefOf.Silver ||
                 t.def == ThingDefOf.Uranium)
             {
-                Log.Message("thingmined: " + t);
                 DataStore.MinedOre.Add(t);
             }
         }
@@ -109,15 +108,12 @@ namespace Rimworld_Prospector
         {
             if (!HasEnoughOreToPack(out var oreToPack)) return;
 
-//            Log.Message("oreToPack " + oreToPack.Count);
             Job giveJob = null;
-            foreach (Thing ore in oreToPack)
+            foreach (PackableOre pOre in oreToPack)
             {
-//                Log.Message("ore " + ore);
-//                Log.Message("ore.stack " + ore.stackCount);
-                giveJob = new Job(JobDriver_GiveToPackAnimalDone.DefOf, ore, packMule)
+                giveJob = new Job(JobDriver_GiveToPackAnimalDone.DefOf, pOre.Ore, packMule)
                 {
-                    count = 35
+                    count = pOre.StackCount
                 };
                 prospector.jobs.jobQueue.EnqueueLast(giveJob);
             }
@@ -134,25 +130,20 @@ namespace Rimworld_Prospector
          * Decide wether there are enough mined ore around to fully pack the mule
          * and return the list of ore to be packed
          */
-        private static bool HasEnoughOreToPack(out List<Thing> oreToPack)
+        private static bool HasEnoughOreToPack(out List<PackableOre> oreToPack)
         {
-            oreToPack = new List<Thing>();
-//            Log.Message("dataStore.minedOre.Count " + dataStore.MinedOre.Count);
+            oreToPack = new List<PackableOre>();
 
             if (DataStore.MinedOre.Count == 0)
             {
                 return false;
             }
             
-            var max = MassUtility.CountToPickUpUntilOverEncumbered(packMule, DataStore.MinedOre.First());
-//            Log.Message("max: " + max);
+            var max = MassUtility.CountToPickUpUntilOverEncumbered(packMule, DataStore.MinedOre.First()) - 1;
             var toPackCount = 0;
-            var oreChecked = 0;
             
             foreach (Thing ore in DataStore.MinedOre)
             {
-                oreChecked++;
-//                Log.Message("ore> " + ore);
                 if (ore.def != DataStore.MinedOre.First().def)
                 {
                     continue;
@@ -161,20 +152,34 @@ namespace Rimworld_Prospector
                 var toPackDiff = max - toPackCount;
                 if (ore.stackCount <= toPackDiff)
                 {
-                    oreToPack.Add(ore);
+                    oreToPack.Add(new PackableOre(ore, ore.stackCount));
                     toPackCount += ore.stackCount;
                 }
+                else if (toPackDiff > 1)
+                {
+                    oreToPack.Add(new PackableOre(ore, toPackDiff));
+                    toPackCount += toPackDiff;
+                }
                 
-                if (toPackCount == max)
+                if (toPackCount >= max)
                 {
                     break;
                 }
             }
             
-//            Log.Message("toPackCount " + toPackCount);
-//            Log.Message("oreChecked " + oreChecked);
+            return toPackCount >= max;
+        }
 
-            return toPackCount == max || oreChecked == DataStore.MinedOre.Count - 1;
+        private class PackableOre
+        {
+            public Thing Ore { get; }
+            public int StackCount { get; }
+
+            public PackableOre(Thing ore, int stackCount)
+            {
+                Ore = ore;
+                StackCount = stackCount;
+            }
         }
 
         /**
