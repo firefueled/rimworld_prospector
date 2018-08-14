@@ -1,41 +1,46 @@
 ﻿﻿using System;
-using Harmony;
-using HugsLib;
-using RimWorld;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading;
-using HugsLib.Utils;
-using Verse;
-using Verse.AI;
+ using System.Collections.Generic;
+ using System.ComponentModel;
+ using System.Linq;
+ using System.Threading;
+ using Harmony;
+ using HugsLib;
+ using HugsLib.Utils;
+ using RimWorld;
+ using Verse;
+ using Verse.AI;
 
 namespace Rimworld_Prospector
 {
     // A mining operation has ended
+    // ReSharper disable once ClassNeverInstantiated.Global
     [HarmonyPatch(typeof(Mineable), "DestroyMined")]
     internal class DoneMiningRock : ModBase
     {
         private static bool hasPackMule;
         private static Pawn packMule;
         private static Pawn prospector;
-        public static WorldDataStore dataStore;
-        private const int MAX_GIVE_JOB_WAIT = 10000;
+        public static WorldDataStore DataStore;
+        public static ModLogger Log; 
+        private const int MaxGiveJobWait = 10000;
 
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
 
         public override void WorldLoaded()
         {
-            dataStore = UtilityWorldObjectManager.GetUtilityWorldObject<WorldDataStore>();
+            DataStore = UtilityWorldObjectManager.GetUtilityWorldObject<WorldDataStore>();
+            Log = new ModLogger("Prospector");
         }
 
+        // ReSharper disable once InconsistentNaming
         private static void Postfix(Thing __instance, Pawn pawn)
         {
             prospector = pawn;
 
             DeisgnateCellsAround(pawn);
 
-            // Find the pack mule if it exists            
+            // Find the pack mule if it exists
+            // TODO make sure pack mule is close by
             foreach (Pawn p in pawn.Map.mapPawns.PawnsInFaction(pawn.Faction))
             {
                 if (p.playerSettings.master == pawn)
@@ -66,8 +71,8 @@ namespace Rimworld_Prospector
                 t.def == ThingDefOf.Silver ||
                 t.def == ThingDefOf.Uranium)
             {
-//                Log.Message("thingmined: " + t);
-                dataStore.MinedOre.Add(t);
+                Log.Message("thingmined: " + t);
+                DataStore.MinedOre.Add(t);
             }
         }
 
@@ -121,7 +126,7 @@ namespace Rimworld_Prospector
             sendPackAnimalWorker.DoWork += WaitAndSendPackAnimal;
             
             // only wait for the last job
-            dataStore.GiveJobDoneTracker.AddJob(prospector, giveJob);
+            DataStore.GiveJobDoneTracker.AddJob(prospector, giveJob);
             sendPackAnimalWorker.RunWorkerAsync(giveJob);
         } 
 
@@ -134,21 +139,21 @@ namespace Rimworld_Prospector
             oreToPack = new List<Thing>();
 //            Log.Message("dataStore.minedOre.Count " + dataStore.MinedOre.Count);
 
-            if (dataStore.MinedOre.Count == 0)
+            if (DataStore.MinedOre.Count == 0)
             {
                 return false;
             }
             
-            var max = MassUtility.CountToPickUpUntilOverEncumbered(packMule, dataStore.MinedOre.First());
+            var max = MassUtility.CountToPickUpUntilOverEncumbered(packMule, DataStore.MinedOre.First());
 //            Log.Message("max: " + max);
             var toPackCount = 0;
             var oreChecked = 0;
             
-            foreach (Thing ore in dataStore.MinedOre)
+            foreach (Thing ore in DataStore.MinedOre)
             {
                 oreChecked++;
 //                Log.Message("ore> " + ore);
-                if (ore.def != dataStore.MinedOre.First().def)
+                if (ore.def != DataStore.MinedOre.First().def)
                 {
                     continue;
                 }
@@ -169,7 +174,7 @@ namespace Rimworld_Prospector
 //            Log.Message("toPackCount " + toPackCount);
 //            Log.Message("oreChecked " + oreChecked);
 
-            return toPackCount == max || oreChecked == dataStore.MinedOre.Count - 1;
+            return toPackCount == max || oreChecked == DataStore.MinedOre.Count - 1;
         }
 
         /**
@@ -179,16 +184,16 @@ namespace Rimworld_Prospector
         {
             DateTime starTime = DateTime.Now;
             var job = (Job) e.Argument;
-            var isGiveJobDone = dataStore.GiveJobDoneTracker.IsDone(prospector, job);
+            var isGiveJobDone = DataStore.GiveJobDoneTracker.IsDone(prospector, job);
             Log.Message("isGiveJobDone " + isGiveJobDone);
-            while (!isGiveJobDone && (DateTime.Now - starTime).Milliseconds < MAX_GIVE_JOB_WAIT)
+            while (!isGiveJobDone && (DateTime.Now - starTime).Milliseconds < MaxGiveJobWait)
             {
                 Thread.Sleep(250);
-                isGiveJobDone = dataStore.GiveJobDoneTracker.IsDone(prospector, job);
+                isGiveJobDone = DataStore.GiveJobDoneTracker.IsDone(prospector, job);
                 Log.Message("isGiveJobDone " + isGiveJobDone);
             }
 
-            dataStore.GiveJobDoneTracker.RemoveJob(prospector, job);
+            DataStore.GiveJobDoneTracker.RemoveJob(prospector, job);
             
             if (!isGiveJobDone) return;
             Log.Message("jobdonemaybe");

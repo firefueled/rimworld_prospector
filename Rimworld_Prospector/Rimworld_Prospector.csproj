@@ -56,7 +56,7 @@
     <Compile Include="GiveJobDoneTracker.cs" />
     <Compile Include="JobDriver_GiveToPackAnimalDone.cs" />
     <Compile Include="JobDriver_SendPackAnimalHome.cs" />
-    <Compile Include="Main.cs" />
+    <Compile Include="DoneMiningRock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorldDataStore.cs" />
   </ItemGroup>

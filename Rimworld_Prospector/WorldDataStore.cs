@@ -4,6 +4,7 @@ using Verse;
 
 namespace Rimworld_Prospector
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class WorldDataStore : UtilityWorldObject
     {
         /**
@@ -23,8 +24,8 @@ namespace Rimworld_Prospector
 
         public override void ExposeData() {
             base.ExposeData();
-            Scribe_Values.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker");
-            Scribe_Values.Look(ref MinedOre, "MinedOre");
+            Scribe_Values.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker2");
+            Scribe_Values.Look(ref MinedOre, "MinedOre2");
         }
     }
 }

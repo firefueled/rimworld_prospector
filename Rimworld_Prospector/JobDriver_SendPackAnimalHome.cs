@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
+using RimWorld;
 using Verse;
 using Verse.AI;
-using RimWorld;
 
 namespace Rimworld_Prospector
 {
@@ -32,7 +30,7 @@ namespace Rimworld_Prospector
                 yield break;
             }
 
-            var dropCell = new IntVec3(70, 0, 84);
+            var dropCell = new IntVec3(136, 0, 84);
             yield return Toils_Goto.GotoCell(dropCell, PathEndMode.OnCell);
             yield return Toils_General.Do(() =>
             {

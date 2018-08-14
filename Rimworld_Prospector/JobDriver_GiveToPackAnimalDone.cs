@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using HugsLib.Utils;
+﻿using System.Collections.Generic;
+using RimWorld;
 using Verse;
 using Verse.AI;
-using RimWorld;
 
 namespace Rimworld_Prospector
 {
@@ -26,8 +23,8 @@ namespace Rimworld_Prospector
             
             yield return Toils_General.Do(() =>
             {
-                DoneMiningRock.dataStore.MinedOre.Remove(TargetThingA);
-                DoneMiningRock.dataStore.GiveJobDoneTracker.SetDone(pawn, job);
+                DoneMiningRock.DataStore.MinedOre.Remove(TargetThingA);
+                DoneMiningRock.DataStore.GiveJobDoneTracker.SetDone(pawn, job);
             });
         }
     }
