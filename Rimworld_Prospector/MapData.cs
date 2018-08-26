@@ -6,9 +6,9 @@ using HugsLib.Utils;
 namespace Rimworld_Prospector
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    public class WorldDataStore : MapComponent
+    public class MapData : MapComponent
     {
-        public WorldDataStore (Map map) : base(map)
+        public MapData (Map map) : base(map)
         {
             MinedOre = new List<Thing>();
             GiveJobDoneTracker = new GiveJobDoneTracker();
