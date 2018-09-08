@@ -8,7 +8,8 @@ namespace Rimworld_Prospector
 {
     // A mining operation has ended
     [HarmonyPatch(typeof(Mineable), "DestroyMined")]
-    class DoneMiningRock : ModBase
+    // ReSharper disable once ClassNeverInstantiated.Global
+    internal class DoneMiningRock : ModBase
     {
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
 
@@ -16,12 +17,12 @@ namespace Rimworld_Prospector
         {
             // A cell grid around the mining pawn covering an area two cells away from it
             var cellsAround = GenAdj.CellsOccupiedBy(pawn.Position, pawn.Rotation, new IntVec2(5, 5));
-            Designator_Mine dm = new Designator_Mine();
+            var dm = new Designator_Mine();
 
-            foreach (var cell in cellsAround)
+            foreach (IntVec3 cell in cellsAround)
             {
                 // Find out what Thing, of the Bulding, category is on the cell
-                var thing = pawn.Map.thingGrid.ThingAt(cell, ThingCategory.Building);
+                Thing thing = pawn.Map.thingGrid.ThingAt(cell, ThingCategory.Building);
                 if (
                         thing != null &&
                         IsOre(thing.def) &&
@@ -36,20 +37,20 @@ namespace Rimworld_Prospector
         }
 
         // Wether an mine "Order" hassn't been placed on the cell yet
-        static bool HasntBeenDesignatedYet(Designator_Mine dm, IntVec3 cell)
+        private static bool HasntBeenDesignatedYet(Designator_Mine dm, IntVec3 cell)
         {
             return dm.CanDesignateCell(cell).Accepted;
         }
 
         // Wether the Thing is a rock with mineable resources
-        static bool IsOre(ThingDef def)
+        private static bool IsOre(ThingDef def)
         {
-            return def != null && def.building != null && def.building.isResourceRock;
+            return def?.building != null && def.building.isResourceRock;
         }
 
         // Wether the pawn can reach the cell (Rock) to the point of being able to touch it,
         // instead of standing on it
-        static bool CanReach(Pawn pawn, IntVec3 cell)
+        private static bool CanReach(Pawn pawn, IntVec3 cell)
         {
             return pawn.CanReach(cell, PathEndMode.Touch, Danger.None);
         }
