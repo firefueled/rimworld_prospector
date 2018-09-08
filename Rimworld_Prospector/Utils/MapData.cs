@@ -13,6 +13,7 @@ namespace Rimworld_Prospector
             MinedOre = new List<Thing>();
             GiveJobDoneTracker = new GiveJobDoneTracker();
             PawnPackAnimalTracker = new Dictionary<string, Pawn>();
+            DesignationTracker = new Dictionary<string, List<IntVec3>>();
         }
 
         /**
@@ -29,12 +30,14 @@ namespace Rimworld_Prospector
          * Pack animal
          */
         public Dictionary<string, Pawn> PawnPackAnimalTracker;
+        public Dictionary<string, List<IntVec3>> DesignationTracker;
 
         public override void ExposeData() {
             base.ExposeData();
             Scribe_Values.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker");
             Scribe_Values.Look(ref MinedOre, "MinedOre");
             Scribe_Values.Look(ref PawnPackAnimalTracker, "PawnPackAnimalTracker");
+            Scribe_Values.Look(ref DesignationTracker, "DesignationTracker");
         }
     }
 }
