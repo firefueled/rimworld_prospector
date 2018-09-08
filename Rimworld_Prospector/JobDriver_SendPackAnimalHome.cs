@@ -45,7 +45,7 @@ namespace Rimworld_Prospector
             return "Someone is loading a pack animal and making it go somewhere";
         }
 
-        public override bool TryMakePreToilReservations()
+        public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
             Log.Message("TryMakePreToilReservations");
             return true;

@@ -66,7 +66,7 @@ namespace Rimworld_Prospector
             // Find a pack animal that's close by, if it exists
             foreach (Pawn p in prospector.Map.mapPawns.PawnsInFaction(prospector.Faction))
             {               
-                if (p.playerSettings.master != prospector) continue;
+                if (p.playerSettings.Master != prospector) continue;
 
                 if (!IsPackAnimalNear(p))
                 {
@@ -96,7 +96,8 @@ namespace Rimworld_Prospector
         {
             Thing t = prospector.Map.thingGrid.ThingAt(thing.Position, ThingCategory.Item);
             if (t.def == ThingDefOf.Steel ||
-                t.def == ThingDefOf.Component ||
+                t.def == ThingDefOf.ComponentIndustrial ||
+                t.def == ThingDefOf.ComponentSpacer ||
                 t.def == ThingDefOf.Gold ||
                 t.def == ThingDefOf.Plasteel ||
                 t.def == ThingDefOf.Silver ||
