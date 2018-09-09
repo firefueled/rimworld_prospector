@@ -53,9 +53,10 @@ namespace Rimworld_Prospector
             }
 
             // Find a pack animal that's close by, if it exists
-            foreach (Pawn p in prospector.Map.mapPawns.PawnsInFaction(prospector.Faction))
+            foreach (Pawn p in prospector.Map.mapPawns.SpawnedPawnsInFaction(prospector.Faction))
             {
                 if (p.playerSettings.Master != prospector) continue;
+                if (!p.RaceProps.packAnimal) continue;
 
                 if (!IsPackAnimalReachable(p, prospector))
                 {

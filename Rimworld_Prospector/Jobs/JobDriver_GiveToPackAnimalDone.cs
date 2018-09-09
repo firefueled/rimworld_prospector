@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -16,16 +17,39 @@ namespace Rimworld_Prospector.Jobs
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            foreach (Toil toil in base.MakeNewToils())
-            {
-                yield return toil;
-            }
-            
+            yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch);
+            yield return Toils_Haul.StartCarryThing(TargetIndex.A);
+            yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.Touch)
+                .FailOnDespawnedNullOrForbidden(TargetIndex.B);
+            yield return GiveToCarrierAsMuchAsPossibleToil();
+
             yield return Toils_General.Do(() =>
             {
                 DoneMiningRock.MapData.MinedOre.Remove(TargetThingA);
                 DoneMiningRock.MapData.GiveJobDoneTracker.SetDone(pawn, job);
             });
+        }
+
+        private Toil GiveToCarrierAsMuchAsPossibleToil()
+        {
+            return new Toil
+            {
+                initAction = delegate
+                {
+                    if (TargetThingA == null)
+                    {
+                        pawn.jobs.EndCurrentJob(JobCondition.Incompletable);
+                    }
+                    else
+                    {
+                        var count = Math.Min(
+                            MassUtility.CountToPickUpUntilOverEncumbered((Pawn) TargetThingB, TargetThingA),
+                            TargetThingA.stackCount);
+                        pawn.carryTracker.innerContainer.TryTransferToContainer(TargetThingA,
+                            ((Pawn) TargetThingB).inventory.innerContainer, count);
+                    }
+                }
+            };
         }
     }
 }

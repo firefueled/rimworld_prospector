@@ -36,6 +36,7 @@ namespace Rimworld_Prospector
         {
             prospector = pawn;
             MapData = prospector.Map.GetComponent<MapData>();
+//            prospector.jobs.debugLog = true;
             
             DeisgnateCellsAround(__instance);
             Utils.AddMinedOreAt(__instance, prospector.Map);
@@ -46,7 +47,7 @@ namespace Rimworld_Prospector
             // Do nothing if the only available pack mule is hauling stuff
             packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
 
-            Log.Message("packMule: " + packMule.Name);
+            Log.Message("packMule.Name: " + packMule.Name);
             Log.Message("curjob: " + packMule.CurJob);
             if (packMule.CurJob.def == JobDriver_SendPackAnimalHome.DefOf) return;
             
@@ -95,7 +96,7 @@ namespace Rimworld_Prospector
         {
             Log.Message("designations " + MapData.DesignationTracker[prospector.ThingID].Count);
             if (!Utils.MaybeListOreToPack(out var oreToPack, packMule)) return;
-            Log.Message("oreToPack " + oreToPack);
+            Log.Message("oreToPack " + oreToPack.Count);
 
             Job giveJob = null;
             foreach (Utils.PackableOre pOre in oreToPack)
