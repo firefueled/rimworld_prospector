@@ -115,6 +115,23 @@ namespace Rimworld_Prospector
             return toPackCount >= max;
         }
 
+        /**
+         * Store the ore mined so far for later reference
+         */
+        public static void AddMinedOreAt(Thing thingPosition, Map map)
+        {
+            Thing t = map.thingGrid.ThingAt(thingPosition.Position, ThingCategory.Item);
+            if (t.def == ThingDefOf.Steel ||
+                t.def == ThingDefOf.ComponentIndustrial ||
+                t.def == ThingDefOf.Gold ||
+                t.def == ThingDefOf.Plasteel ||
+                t.def == ThingDefOf.Silver ||
+                t.def == ThingDefOf.Uranium)
+            {
+                DoneMiningRock.MapData.MinedOre.Add(t);
+            }
+        }
+
         public class PackableOre
         {
             public Thing Ore { get; }
@@ -124,24 +141,6 @@ namespace Rimworld_Prospector
             {
                 Ore = ore;
                 StackCount = stackCount;
-            }
-        }
-
-        /**
-         * Store the ore mined so far for later reference
-         */
-        public static void AddMinedOreAt(Thing thingPosition)
-        {
-            Thing t = thingPosition.Map.thingGrid.ThingAt(thingPosition.Position, ThingCategory.Item);
-            if (t.def == ThingDefOf.Steel ||
-                t.def == ThingDefOf.ComponentIndustrial ||
-                t.def == ThingDefOf.ComponentSpacer ||
-                t.def == ThingDefOf.Gold ||
-                t.def == ThingDefOf.Plasteel ||
-                t.def == ThingDefOf.Silver ||
-                t.def == ThingDefOf.Uranium)
-            {
-                DoneMiningRock.MapData.MinedOre.Add(t);
             }
         }
     }

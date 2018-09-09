@@ -3,7 +3,7 @@ using RimWorld;
 using Verse;
 using Verse.AI;
 
-namespace Rimworld_Prospector
+namespace Rimworld_Prospector.Jobs
 {
     // ReSharper disable once InconsistentNaming
     // ReSharper disable once ClassNeverInstantiated.Global
@@ -30,7 +30,7 @@ namespace Rimworld_Prospector
                 yield break;
             }
 
-            var dropCell = new IntVec3(136, 0, 84);
+            var dropCell = new IntVec3(75, 0, 163);
             yield return Toils_Goto.GotoCell(dropCell, PathEndMode.OnCell);
             yield return Toils_General.Do(() =>
             {

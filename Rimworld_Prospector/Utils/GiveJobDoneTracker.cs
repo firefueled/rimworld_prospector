@@ -1,6 +1,6 @@
-﻿﻿using System.Collections.Generic;
- using Verse;
- using Verse.AI;
+﻿using System.Collections.Generic;
+using Verse;
+using Verse.AI;
 
 namespace Rimworld_Prospector
 {

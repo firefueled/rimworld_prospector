@@ -65,7 +65,7 @@
   <ItemGroup>
     <Content Include="ModStructure\About\About.xml" />
     <Content Include="ModStructure\About\preview.png" />
-    <Content Include="ModStructure\Assemblies\%24HugsLibChecker.dll" />
+    <Content Include="ModStructure\Assemblies\$HugsLibChecker.dll" />
     <Content Include="ModStructure\Defs\Prospector_JobDrivers.xml" />
   </ItemGroup>
   <ItemGroup>

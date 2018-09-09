@@ -1,7 +1,5 @@
-﻿﻿using System.Collections.Generic;
-using HugsLib.Utils;
- using RimWorld.Planet;
- using Verse;
+﻿using System.Collections.Generic;
+using Verse;
 
 namespace Rimworld_Prospector
 {

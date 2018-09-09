@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Threading;
 using Harmony;
 using HugsLib;
 using HugsLib.Utils;
+using Rimworld_Prospector.Jobs;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -38,10 +38,11 @@ namespace Rimworld_Prospector
             MapData = prospector.Map.GetComponent<MapData>();
             
             DeisgnateCellsAround(__instance);
-            Utils.AddMinedOreAt(__instance);
+            Utils.AddMinedOreAt(__instance, prospector.Map);
 
             if (!Utils.FindAvailablePackAnimal(prospector)) return;
-
+            // TODO make animal follow master while prospectin'
+            
             // Do nothing if the only available pack mule is hauling stuff
             packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
 
@@ -50,43 +51,6 @@ namespace Rimworld_Prospector
             if (packMule.CurJob.def == JobDriver_SendPackAnimalHome.DefOf) return;
             
             StoreOreInPackMule();
-        }
-
-        private static bool FindAvailablePackAnimal()
-        {
-            if (MapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
-            {
-                Pawn existingPackAnimal = MapData.PawnPackAnimalTracker[prospector.ThingID];
-                if (IsPackAnimalNear(existingPackAnimal)) return true;
-
-                Log.Message("Existing pack animal " + existingPackAnimal + " is too far");
-                return false;
-            }
-
-            // Find a pack animal that's close by, if it exists
-            foreach (Pawn p in prospector.Map.mapPawns.PawnsInFaction(prospector.Faction))
-            {               
-                if (p.playerSettings.Master != prospector) continue;
-
-                if (!IsPackAnimalNear(p))
-                {
-                    Log.Message("Found pack animal " + p + " but it's too far");
-                    continue;
-                }
-
-                MapData.PawnPackAnimalTracker.Add(prospector.ThingID, p);
-                return true;
-            }
-
-            return false;
-        }
-
-        private static bool IsPackAnimalNear(Thing p)
-        {
-            PawnPath path = prospector.Map.pathFinder.FindPath(
-                prospector.Position, p.Position, prospector, PathEndMode.ClosestTouch
-            );
-            return path.TotalCost <= 200;
         }
 
         /**
