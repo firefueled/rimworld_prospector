@@ -21,7 +21,6 @@ namespace Rimworld_Prospector
         private static Pawn prospector;
         public static MapData MapData;
         public static ModLogger Log;
-        private static bool IsDoneProspecting;
         private const int MaxGiveJobWait = 30000;
 
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
@@ -44,6 +43,7 @@ namespace Rimworld_Prospector
             if (!Utils.FindAvailablePackAnimal(prospector)) return;
             // TODO make animal follow master while prospectin'
             
+            
             // Do nothing if the only available pack mule is hauling stuff
             packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
 
@@ -51,6 +51,7 @@ namespace Rimworld_Prospector
             Log.Message("curjob: " + packMule.CurJob);
             if (packMule.CurJob.def == JobDriver_SendPackAnimalHome.DefOf) return;
             
+            // TODO only pack when a reasonable amount of Things are available
             StoreOreInPackMule();
         }
 
@@ -63,11 +64,6 @@ namespace Rimworld_Prospector
             var cellsAround = GenAdj.CellsOccupiedBy(prospector.Position, prospector.Rotation, new IntVec2(5, 5));
             var dm = new Designator_Mine();
             
-            if (!MapData.DesignationTracker.ContainsKey(prospector.ThingID))
-                MapData.DesignationTracker[prospector.ThingID] = new List<IntVec3>();
-            else
-                MapData.DesignationTracker[prospector.ThingID].Remove(minedCell.Position);
-
             foreach (IntVec3 cell in cellsAround)
             {
                 // Find out what Thing is on the cell
@@ -81,12 +77,8 @@ namespace Rimworld_Prospector
                 {
                     // "Order" the cell to be mined
                     dm.DesignateSingleCell(cell);
-                    MapData.DesignationTracker[prospector.ThingID].Add(cell);
                 }
             }
-
-            if (MapData.DesignationTracker[prospector.ThingID].Count == 0)
-                IsDoneProspecting = true;
         }
 
         /**
@@ -94,7 +86,6 @@ namespace Rimworld_Prospector
          */
         private static void StoreOreInPackMule()
         {
-            Log.Message("designations " + MapData.DesignationTracker[prospector.ThingID].Count);
             if (!Utils.MaybeListOreToPack(out var oreToPack, packMule)) return;
             Log.Message("oreToPack " + oreToPack.Count);
 
@@ -113,7 +104,7 @@ namespace Rimworld_Prospector
             
             // only wait for the last job
             Log.Message("prostector " + prospector + " job: " + giveJob);
-            MapData.GiveJobDoneTracker.AddJob(prospector, giveJob);
+            MapData.GiveJobDoneTracker.Add(prospector.ThingID + giveJob?.loadID, false);
             sendPackAnimalWorker.RunWorkerAsync(giveJob);
         } 
 
@@ -124,16 +115,18 @@ namespace Rimworld_Prospector
         {
             DateTime starTime = DateTime.Now;
             var job = (Job) e.Argument;
-            var isGiveJobDone = MapData.GiveJobDoneTracker.IsDone(prospector, job);
+            var trackerKey = prospector.ThingID + job.loadID;
+            var isGiveJobDone = MapData.GiveJobDoneTracker[trackerKey];
+            
             Log.Message("isGiveJobDone " + isGiveJobDone);
             while (!isGiveJobDone && (DateTime.Now - starTime).Milliseconds < MaxGiveJobWait)
             {
                 Thread.Sleep(250);
-                isGiveJobDone = MapData.GiveJobDoneTracker.IsDone(prospector, job);
+                isGiveJobDone = MapData.GiveJobDoneTracker[trackerKey];
                 Log.Message("isGiveJobDone " + isGiveJobDone);
             }
 
-            MapData.GiveJobDoneTracker.RemoveJob(prospector, job);
+            MapData.GiveJobDoneTracker.Remove(trackerKey);
             
             if (!isGiveJobDone) return;
             Log.Message("jobdonemaybe");

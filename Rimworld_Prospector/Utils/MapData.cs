@@ -9,15 +9,14 @@ namespace Rimworld_Prospector
         public MapData (Map map) : base(map)
         {
             MinedOre = new List<Thing>();
-            GiveJobDoneTracker = new GiveJobDoneTracker();
+            GiveJobDoneTracker = new Dictionary<string, bool>();
             PawnPackAnimalTracker = new Dictionary<string, Pawn>();
-            DesignationTracker = new Dictionary<string, List<IntVec3>>();
         }
 
         /**
          * The helper for tracking Jobs' doneness
          */
-        public GiveJobDoneTracker GiveJobDoneTracker;
+        public Dictionary<string, bool> GiveJobDoneTracker;
 
         /**
          * The list of mined ore 
@@ -28,14 +27,14 @@ namespace Rimworld_Prospector
          * Pack animal
          */
         public Dictionary<string, Pawn> PawnPackAnimalTracker;
-        public Dictionary<string, List<IntVec3>> DesignationTracker;
-
+        private List<string> ppKeys;
+        private List<Pawn> ppVals;
+        
         public override void ExposeData() {
             base.ExposeData();
-            Scribe_Values.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker");
-            Scribe_Values.Look(ref MinedOre, "MinedOre");
-            Scribe_Values.Look(ref PawnPackAnimalTracker, "PawnPackAnimalTracker");
-            Scribe_Values.Look(ref DesignationTracker, "DesignationTracker");
+            Scribe_Collections.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref MinedOre, "MinedOre", LookMode.Reference);
+            Scribe_Collections.Look(ref PawnPackAnimalTracker, "PawnPackAnimalTracker", LookMode.Value, LookMode.Reference, ref ppKeys, ref ppVals);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Rimworld_Prospector.Jobs
             yield return Toils_General.Do(() =>
             {
                 DoneMiningRock.MapData.MinedOre.Remove(TargetThingA);
-                DoneMiningRock.MapData.GiveJobDoneTracker.SetDone(pawn, job);
+                DoneMiningRock.MapData.GiveJobDoneTracker[pawn.ThingID + job.loadID] = true;
             });
         }
 
