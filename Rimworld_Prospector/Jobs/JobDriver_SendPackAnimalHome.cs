@@ -12,22 +12,19 @@ namespace Rimworld_Prospector.Jobs
      */
     public class JobDriver_SendPackAnimalHome : JobDriver
     {
+
+        public override bool TryMakePreToilReservations(bool errorOnFailed)
+        {
+            Log.Message("TryMakePreToilReservations");
+            return true;
+        }
+        
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            Log.Message("Returning Toils");
-
-            Thing makeThing = ThingMaker.MakeThing(ThingDefOf.Steel);
-            Log.Message("FreeSpace: " + MassUtility.FreeSpace(pawn));
-            Log.Message("EncumbrancePercent: " + MassUtility.EncumbrancePercent(pawn));
-            Log.Message("IsOverEncumbered: " + MassUtility.IsOverEncumbered(pawn));
-            Log.Message("WillBeOverEncumberedAfterPickingUp: " + MassUtility.WillBeOverEncumberedAfterPickingUp(pawn, makeThing, 1));
-            Log.Message("CountToPickUpUntilOverEncumbered: " + MassUtility.CountToPickUpUntilOverEncumbered(pawn, makeThing));
-
-            var dropCell = new IntVec3(75, 0, 163);
-            yield return Toils_Goto.GotoCell(dropCell, PathEndMode.OnCell);
+            yield return Toils_Goto.GotoCell(TargetLocA, PathEndMode.OnCell);
             yield return Toils_General.Do(() =>
             {
-                pawn.inventory.DropAllNearPawn(dropCell);
+                pawn.inventory.DropAllNearPawn(TargetLocA);
                 EndJobWith(JobCondition.Succeeded);
             });
         }
@@ -35,13 +32,7 @@ namespace Rimworld_Prospector.Jobs
         public override string GetReport()
         {
             Log.Message("Getting Report");
-            return "Someone is loading a pack animal and making it go somewhere";
-        }
-
-        public override bool TryMakePreToilReservations(bool errorOnFailed)
-        {
-            Log.Message("TryMakePreToilReservations");
-            return true;
+            return "Dumping mined stuff onto the dump site";
         }
 
         public static readonly JobDef DefOf = DefDatabase<JobDef>.GetNamed("Prospector_JobDriver_SendPackAnimalHome");

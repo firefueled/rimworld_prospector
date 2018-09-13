@@ -41,7 +41,6 @@ namespace Rimworld_Prospector
             Utils.AddMinedOreAt(__instance, prospector.Map);
 
             if (!Utils.FindAvailablePackAnimal(prospector)) return;
-            // TODO make animal follow master while prospectin'
             
             
             // Do nothing if the only available pack mule is hauling stuff
@@ -51,7 +50,6 @@ namespace Rimworld_Prospector
             Log.Message("curjob: " + packMule.CurJob);
             if (packMule.CurJob.def == JobDriver_SendPackAnimalHome.DefOf) return;
             
-            // TODO only pack when a reasonable amount of Things are available
             StoreOreInPackMule();
         }
 
@@ -131,7 +129,7 @@ namespace Rimworld_Prospector
             if (!isGiveJobDone) return;
             Log.Message("jobdonemaybe");
 
-            var packJob = new Job(JobDriver_SendPackAnimalHome.DefOf);
+            var packJob = new Job(JobDriver_SendPackAnimalHome.DefOf, new IntVec3(75, 0, 163));
             packMule.jobs.jobQueue.EnqueueFirst(packJob);
         }
     }
