@@ -23,13 +23,6 @@ namespace Rimworld_Prospector.Jobs
             Log.Message("WillBeOverEncumberedAfterPickingUp: " + MassUtility.WillBeOverEncumberedAfterPickingUp(pawn, makeThing, 1));
             Log.Message("CountToPickUpUntilOverEncumbered: " + MassUtility.CountToPickUpUntilOverEncumbered(pawn, makeThing));
 
-            var isPackMuleFull = MassUtility.WillBeOverEncumberedAfterPickingUp(pawn, makeThing, 1);
-            if (!isPackMuleFull)
-            {
-                EndJobWith(JobCondition.Succeeded);
-                yield break;
-            }
-
             var dropCell = new IntVec3(75, 0, 163);
             yield return Toils_Goto.GotoCell(dropCell, PathEndMode.OnCell);
             yield return Toils_General.Do(() =>
