@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using RimWorld;
 using Verse;
 using Verse.AI;
 
@@ -15,12 +14,13 @@ namespace Rimworld_Prospector.Jobs
 
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
-            Log.Message("TryMakePreToilReservations");
-            return true;
+            return pawn.Reserve(TargetLocA, job, 1, -1, null, errorOnFailed);
         }
         
         protected override IEnumerable<Toil> MakeNewToils()
         {
+            this.FailOnDestroyedOrNull(TargetIndex.A);
+
             yield return Toils_Goto.GotoCell(TargetLocA, PathEndMode.OnCell);
             yield return Toils_General.Do(() =>
             {

@@ -1,13 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-  <JobDef>
-    <defName>Prospector_JobDriver_SendPackAnimalHome</defName>
-    <driverClass>Rimworld_Prospector.Jobs.JobDriver_SendPackAnimalHome</driverClass>
-    <reportString>prospecting ore.</reportString>
-  </JobDef>
-  <JobDef>
-    <defName>Prospector_JobDriver_GiveToPackAnimalDone</defName>
-    <driverClass>Rimworld_Prospector.Jobs.JobDriver_GiveToPackAnimalDone</driverClass>
-    <reportString>prospecting ore.</reportString>
-  </JobDef>
+    <ThingDef ParentName="BuildingBase">
+        <defName>ProspectionDumpSpot</defName>
+        <label>prospection dump spot</label>
+        <description>Designates a spot for a pack animal to dump mined materials.</description>
+        <graphicData>
+            <texPath>Things/Building/Misc/PartySpot</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <altitudeLayer>FloorEmplacement</altitudeLayer>
+        <statBases>
+            <WorkToBuild>0</WorkToBuild>
+        </statBases>
+        <rotatable>false</rotatable>
+        <scatterableOnMapGen>false</scatterableOnMapGen>
+        <useHitPoints>False</useHitPoints>
+        <designationCategory>Misc</designationCategory>
+        <passability>Standable</passability>
+        <building>
+            <sowTag>SupportPlantsOnly</sowTag>
+            <canPlaceOverImpassablePlant>false</canPlaceOverImpassablePlant>
+            <ai_chillDestination>false</ai_chillDestination>
+        </building>
+        <designationHotKey>Misc11</designationHotKey>
+    </ThingDef>
+
+    <JobDef>
+        <defName>Prospector_JobDriver_SendPackAnimalHome</defName>
+        <driverClass>Rimworld_Prospector.Jobs.JobDriver_SendPackAnimalHome</driverClass>
+        <reportString>prospecting ore.</reportString>
+    </JobDef>
+    
+    <JobDef>
+        <defName>Prospector_JobDriver_GiveToPackAnimalDone</defName>
+        <driverClass>Rimworld_Prospector.Jobs.JobDriver_GiveToPackAnimalDone</driverClass>
+        <reportString>prospecting ore.</reportString>
+    </JobDef>
 </Defs>

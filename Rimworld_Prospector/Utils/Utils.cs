@@ -133,6 +133,30 @@ namespace Rimworld_Prospector
             }
         }
 
+        /**
+         * Find the closest dump spot to the pack animal, or null
+         */
+        public static Building FindClosestDumpSpot(Thing pawn)
+        {
+            var dumpSpots = pawn.Map.listerBuildings.AllBuildingsColonistOfDef(
+                DefDatabase<ThingDef>.GetNamed("ProspectionDumpSpot"));
+
+            Building dumpSpot = null;
+            var minDist = -1;
+
+            foreach (Building spot in dumpSpots)
+            {
+                var distanceToSquared = spot.Position.DistanceToSquared(pawn.Position);
+                if (dumpSpot == null || distanceToSquared < minDist)
+                {
+                    dumpSpot = spot;
+                    minDist = distanceToSquared;
+                }
+            }
+
+            return dumpSpot;
+        }
+
         public class PackableOre
         {
             public Thing Ore { get; }

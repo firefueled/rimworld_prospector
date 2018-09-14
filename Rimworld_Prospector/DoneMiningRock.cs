@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
 using Harmony;
@@ -21,6 +20,7 @@ namespace Rimworld_Prospector
         private static Pawn prospector;
         public static MapData MapData;
         public static ModLogger Log;
+        private static Building dumpSpot;
         private const int MaxGiveJobWait = 30000;
 
         public override string ModIdentifier => "com.firefueled.rimworld_prospector";
@@ -37,26 +37,31 @@ namespace Rimworld_Prospector
             MapData = prospector.Map.GetComponent<MapData>();
 //            prospector.jobs.debugLog = true;
             
-            DeisgnateCellsAround(__instance);
+            DeisgnateCellsAround();
             Utils.AddMinedOreAt(__instance, prospector.Map);
 
             if (!Utils.FindAvailablePackAnimal(prospector)) return;
             
-            
-            // Do nothing if the only available pack mule is hauling stuff
             packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
 
-            Log.Message("packMule.Name: " + packMule.Name);
-            Log.Message("curjob: " + packMule.CurJob);
+            // Do nothing if the only available pack mule is hauling stuff
             if (packMule.CurJob.def == JobDriver_SendPackAnimalHome.DefOf) return;
             
+            // Can't pack the animal without having a spot to dump stuff onto
+            dumpSpot = Utils.FindClosestDumpSpot(packMule) as Building;
+            if (dumpSpot == null)
+            {
+                // TODO pop a learning helper
+                return;
+            }
+
             StoreOreInPackMule();
         }
 
         /**
          * Designate rock ore cells around the player for mining
          */
-        private static void DeisgnateCellsAround(Thing minedCell)
+        private static void DeisgnateCellsAround()
         {
             // A cell grid around the mining pawn covering an area two cells away from it
             var cellsAround = GenAdj.CellsOccupiedBy(prospector.Position, prospector.Rotation, new IntVec2(5, 5));
@@ -128,8 +133,8 @@ namespace Rimworld_Prospector
             
             if (!isGiveJobDone) return;
             Log.Message("jobdonemaybe");
-
-            var packJob = new Job(JobDriver_SendPackAnimalHome.DefOf, new IntVec3(75, 0, 163));
+            
+            var packJob = new Job(JobDriver_SendPackAnimalHome.DefOf, dumpSpot);
             packMule.jobs.jobQueue.EnqueueFirst(packJob);
         }
     }
