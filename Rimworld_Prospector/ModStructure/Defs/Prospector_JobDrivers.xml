@@ -22,7 +22,6 @@
             <canPlaceOverImpassablePlant>false</canPlaceOverImpassablePlant>
             <ai_chillDestination>false</ai_chillDestination>
         </building>
-        <designationHotKey>Misc11</designationHotKey>
     </ThingDef>
 
     <JobDef>
