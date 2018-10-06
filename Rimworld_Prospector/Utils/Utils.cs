@@ -43,14 +43,10 @@ namespace Rimworld_Prospector
 
         public static bool FindAvailablePackAnimal(Pawn prospector)
         {
-            if (DoneMiningRock.MapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
-            {
-                Pawn existingPackAnimal = DoneMiningRock.MapData.PawnPackAnimalTracker[prospector.ThingID];
-                if (IsPackAnimalReachable(existingPackAnimal, prospector)) return true;
+            var mapData = prospector.Map.GetComponent<MapData>();
 
-                Log.Message("Existing pack animal " + existingPackAnimal + " is too far");
-                return false;
-            }
+            if (mapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
+                return true;
 
             // Find a pack animal that's close by, if it exists
             foreach (Pawn p in prospector.Map.mapPawns.SpawnedPawnsInFaction(prospector.Faction))
@@ -58,13 +54,7 @@ namespace Rimworld_Prospector
                 if (p.playerSettings.Master != prospector) continue;
                 if (!p.RaceProps.packAnimal) continue;
 
-                if (!IsPackAnimalReachable(p, prospector))
-                {
-                    Log.Message("Found pack animal " + p + " but it's too far");
-                    continue;
-                }
-
-                DoneMiningRock.MapData.PawnPackAnimalTracker.Add(prospector.ThingID, p);
+                mapData.PawnPackAnimalTracker.Add(prospector.ThingID, p);
                 return true;
             }
 
@@ -77,20 +67,21 @@ namespace Rimworld_Prospector
          */
         public static bool MaybeListOreToPack(out List<PackableOre> oreToPack, Pawn packAnimal)
         {
+            var mapData = packAnimal.Map.GetComponent<MapData>();
             oreToPack = new List<PackableOre>();
 
-            if (DoneMiningRock.MapData.MinedOre.Count == 0)
+            if (mapData.MinedOre.Count == 0)
             {
                 return false;
             }
 
             var max =
-                MassUtility.CountToPickUpUntilOverEncumbered(packAnimal, DoneMiningRock.MapData.MinedOre.First()) - 1;
+                MassUtility.CountToPickUpUntilOverEncumbered(packAnimal, mapData.MinedOre.First()) - 1;
             var toPackCount = 0;
 
-            foreach (Thing ore in DoneMiningRock.MapData.MinedOre)
+            foreach (Thing ore in mapData.MinedOre)
             {
-                if (ore.def != DoneMiningRock.MapData.MinedOre.First().def)
+                if (ore.def != mapData.MinedOre.First().def)
                 {
                     continue;
                 }
@@ -121,6 +112,7 @@ namespace Rimworld_Prospector
          */
         public static void AddMinedOreAt(Thing thingPosition, Map map)
         {
+            var mapData = map.GetComponent<MapData>();
             Thing t = map.thingGrid.ThingAt(thingPosition.Position, ThingCategory.Item);
             if (t.def == ThingDefOf.Steel ||
                 t.def == ThingDefOf.ComponentIndustrial ||
@@ -129,7 +121,7 @@ namespace Rimworld_Prospector
                 t.def == ThingDefOf.Silver ||
                 t.def == ThingDefOf.Uranium)
             {
-                DoneMiningRock.MapData.MinedOre.Add(t);
+                mapData.MinedOre.Add(t);
             }
         }
 
@@ -166,6 +158,32 @@ namespace Rimworld_Prospector
             {
                 Ore = ore;
                 StackCount = stackCount;
+            }
+        }
+
+        /**
+         * Designate rock ore cells around the player for mining
+         */
+        public static void DeisgnateCellsAround(Pawn prospector)
+        {
+            // A cell grid around the mining pawn covering an area two cells away from it
+            var cellsAround = GenAdj.CellsOccupiedBy(prospector.Position, prospector.Rotation, new IntVec2(5, 5));
+            var dm = new Designator_Mine();
+            
+            foreach (IntVec3 cell in cellsAround)
+            {
+                // Find out what Thing is on the cell
+                Thing thing = prospector.Map.thingGrid.ThingAt(cell, ThingCategory.Building);
+                if (
+                    thing != null && 
+                    IsResourceRock(thing.def) && 
+                    HasntBeenDesignatedYet(dm, cell) && 
+                    CanReach(prospector, cell)
+                )
+                {
+                    // "Order" the cell to be mined
+                    dm.DesignateSingleCell(cell);
+                }
             }
         }
     }

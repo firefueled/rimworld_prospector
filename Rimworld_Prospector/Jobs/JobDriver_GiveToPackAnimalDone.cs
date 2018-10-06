@@ -17,6 +17,8 @@ namespace Rimworld_Prospector.Jobs
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
+            var mapData = pawn.Map.GetComponent<MapData>();
+
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch);
             yield return Toils_Haul.StartCarryThing(TargetIndex.A);
             yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.Touch)
@@ -25,8 +27,8 @@ namespace Rimworld_Prospector.Jobs
 
             yield return Toils_General.Do(() =>
             {
-                DoneMiningRock.MapData.MinedOre.Remove(TargetThingA);
-                DoneMiningRock.MapData.GiveJobDoneTracker[pawn.ThingID + job.loadID] = true;
+                mapData.MinedOre.Remove(TargetThingA);
+                mapData.GiveJobDoneTracker[pawn.ThingID + job.loadID] = true;
             });
         }
 
