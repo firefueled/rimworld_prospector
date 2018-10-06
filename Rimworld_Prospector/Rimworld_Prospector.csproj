@@ -54,6 +54,7 @@
   <ItemGroup>
     <Content Include="ModStructure\About\About.xml" />
     <Content Include="ModStructure\About\preview.png" />
+    <Content Include="ModStructure\About\Version.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ModStructure\Assemblies" />
