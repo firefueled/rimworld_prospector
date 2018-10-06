@@ -33,17 +33,12 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\..\..\dev\libs\HugsLib\Assemblies\0Harmony.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="0Harmony, Version=1.2.0.1, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Lib.Harmony.1.2.0.1\lib\net35\0Harmony.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.19.6814.14609, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\SteamApps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="HugsLib, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\..\..\dev\libs\HugsLib\Assemblies\HugsLib.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\SteamApps\common\RimWorld\dlls\b19\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,8 +58,11 @@
   <ItemGroup>
     <Content Include="ModStructure\About\About.xml" />
     <Content Include="ModStructure\About\preview.png" />
-    <Content Include="ModStructure\Assemblies\$HugsLibChecker.dll" />
     <Content Include="ModStructure\Defs\Prospector_JobDrivers.xml" />
+    <Content Include="ModStructure\About\Version.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ModStructure\Assemblies" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -76,8 +74,11 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>mkdir Prospector
+    <PostBuildEvent>
+mkdir Prospector
 xcopy ..\..\ModStructure\* Prospector\ /e/d/y
-move Rimworld_Prospector.dll Prospector\Assemblies\</PostBuildEvent>
+move Rimworld_Prospector.dll Prospector\Assemblies\
+move 0Harmony.dll Prospector\Assemblies\
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

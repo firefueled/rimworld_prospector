@@ -1,9 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reflection;
 using System.Threading;
 using Harmony;
-using HugsLib;
-using HugsLib.Utils;
 using Rimworld_Prospector.Jobs;
 using RimWorld;
 using Verse;
@@ -14,21 +13,20 @@ namespace Rimworld_Prospector
     // A mining operation has ended
     // ReSharper disable once ClassNeverInstantiated.Global
     [HarmonyPatch(typeof(Mineable), "DestroyMined")]
-    internal class DoneMiningRock : ModBase
+    [StaticConstructorOnStartup]
+    internal static class DoneMiningRock
     {
+        static DoneMiningRock()
+        {
+            HarmonyInstance harmony = HarmonyInstance.Create("com.firefueled.rimworld_prospector");
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+        }
+        
         private static Pawn packMule;
         private static Pawn prospector;
         public static MapData MapData;
-        public static ModLogger Log;
         private static Building dumpSpot;
         private const int MaxGiveJobWait = 30000;
-
-        public override string ModIdentifier => "com.firefueled.rimworld_prospector";
-
-        public override void WorldLoaded()
-        {
-            Log = new ModLogger("Prospector");
-        }
 
         // ReSharper disable once InconsistentNaming
         private static void Postfix(Thing __instance, Pawn pawn)
