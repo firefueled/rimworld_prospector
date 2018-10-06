@@ -12,23 +12,27 @@ namespace Rimworld_Prospector
 {
     // A mining operation has ended
     // ReSharper disable once ClassNeverInstantiated.Global
-    [HarmonyPatch(typeof(Mineable), "DestroyMined")]
     [StaticConstructorOnStartup]
-    internal static class DoneMiningRock
+    internal static class Main
     {
-        static DoneMiningRock()
+        static Main()
         {
             HarmonyInstance harmony = HarmonyInstance.Create("com.firefueled.rimworld_prospector");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
         }
-        
+    }
+
+    // ReSharper disable once InconsistentNaming
+    [HarmonyPatch(typeof(Mineable), "DestroyMined")]
+    internal static class DoneMiningRock
+    {
+
         private static Pawn packMule;
         private static Pawn prospector;
         public static MapData MapData;
         private static Building dumpSpot;
         private const int MaxGiveJobWait = 30000;
 
-        // ReSharper disable once InconsistentNaming
         private static void Postfix(Thing __instance, Pawn pawn)
         {
             prospector = pawn;
