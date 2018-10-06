@@ -1,5 +1,5 @@
-﻿using Harmony;
-using HugsLib;
+﻿using System.Reflection;
+using Harmony;
 using RimWorld;
 using Verse;
 using Verse.AI;
@@ -8,11 +8,15 @@ namespace Rimworld_Prospector
 {
     // A mining operation has ended
     [HarmonyPatch(typeof(Mineable), "DestroyMined")]
-    // ReSharper disable once ClassNeverInstantiated.Global
-    internal class DoneMiningRock : ModBase
+    [StaticConstructorOnStartup]
+    internal static class DoneMiningRock
     {
-        public override string ModIdentifier => "com.firefueled.rimworld_prospector";
-
+        static DoneMiningRock()
+        {
+            HarmonyInstance harmony = HarmonyInstance.Create("com.firefueled.rimworld_prospector");
+            harmony.PatchAll(Assembly.GetExecutingAssembly());
+        }
+        
         static void Postfix(Pawn pawn)
         {
             // A cell grid around the mining pawn covering an area two cells away from it
