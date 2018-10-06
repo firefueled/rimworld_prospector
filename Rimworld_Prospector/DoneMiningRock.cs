@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Harmony;
-using Rimworld_Prospector;
 using Rimworld_Prospector.Jobs;
 using RimWorld;
 using Verse;
