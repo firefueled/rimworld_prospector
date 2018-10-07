@@ -122,34 +122,29 @@ namespace Rimworld_Prospector
     }
 
     [HarmonyPatch(typeof(JobDriver_Mine), "MakeNewToils")]
-    public class JobOnThing
+    public class MineJobToils
     {
         private static MapData MapData;
         private static Pawn prospector;
-        private static Job ogJob;
+        private static Pawn packMule;
 
         private static void Postfix(JobDriver_Mine __instance, ref IEnumerable<Toil> __result)
         {
-            Log.Message("JobDriver_Mine.MakeNewToils");
+            prospector = __instance.pawn;
+            MapData = prospector.Map.GetComponent<MapData>();
 
-            Pawn pawn = __instance.pawn;
-            MapData = pawn.Map.GetComponent<MapData>();
-
-//            Log.Message("pawn.Name " + pawn.Name);
-            Pawn packMule = null;
-            if (MapData.PawnPackAnimalTracker.ContainsKey(pawn.ThingID))
+            if (MapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
             {
-                packMule = MapData.PawnPackAnimalTracker[pawn.ThingID];
+                packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
             }
             else
             {
-                if (Utils.FindAvailablePackAnimal(pawn))
+                if (Utils.FindAvailablePackAnimal(prospector))
                 {
-                    packMule = MapData.PawnPackAnimalTracker[pawn.ThingID];
+                    packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
                 }
             }
 
-            Log.Message("packMule " + packMule);
             if (packMule == null)
                 return;
             
@@ -159,31 +154,58 @@ namespace Rimworld_Prospector
             if (MapData.PawnPackAnimalFollowing == null)
                 MapData.PawnPackAnimalFollowing = new Dictionary<string, bool>();
             
-            Log.Message("MapData.PawnPackAnimalFollowing " + MapData.PawnPackAnimalFollowing);
-            if (MapData.PawnPackAnimalFollowing.ContainsKey(pawn.ThingID + packMule.ThingID))
-                isAnimalFollowing = MapData.PawnPackAnimalFollowing[pawn.ThingID + packMule.ThingID];
+            if (MapData.PawnPackAnimalFollowing.ContainsKey(prospector.ThingID + packMule.ThingID))
+                isAnimalFollowing = MapData.PawnPackAnimalFollowing[prospector.ThingID + packMule.ThingID];
 
-            Log.Message("isAnimalFollowing " + isAnimalFollowing);
-            
             // only allow mining if the pack animal has been told to follow
             if (isAnimalFollowing)
                 return;
 
-            __instance.job.targetC = packMule.Position;
+            Log.Message("Making pack mule follow prospector");
+            
+            // interact with the animal and set follow field work before executing job
+            __instance.job.targetC = packMule;
+            __instance.FailOnDespawnedNullOrForbidden(TargetIndex.C);
+            __instance.FailOnDowned(TargetIndex.C);
+            __instance.FailOnNotCasualInterruptible(TargetIndex.C);
 
-            // TODO make the pawn follow the animal until reaching it            
-            Toil t1 = Toils_Goto.GotoThing(TargetIndex.C, PathEndMode.Touch);
-            // TODO make the pawn 'interact' with the animal            
-            Toil t2 = Toils_General.Do(() =>
+            var followToils = SetFollowToils().ToList();
+            var toils = __result.ToList();
+
+            for (var i = followToils.Count - 1; i >= 0; i--)
+                toils.Insert(0, followToils[i]);
+
+            __result = toils.AsEnumerable();
+        }
+
+        private static IEnumerable<Toil> SetFollowToils()
+        {
+            yield return Toils_Goto.GotoThing(TargetIndex.C, PathEndMode.Touch);
+            yield return Toils_Interpersonal.SetLastInteractTime(TargetIndex.C);
+            // why, oh why?
+            yield return Toils_General.Do(() => Toils_Interpersonal.WaitToBeAbleToInteract(packMule));
+            yield return Toils_Interpersonal.GotoInteractablePosition(TargetIndex.C);
+            yield return TalkToAnimalToil(TargetIndex.C);
+            yield return Toils_General.Do(() =>
             {
                 packMule.playerSettings.followFieldwork = true;
-                MapData.PawnPackAnimalFollowing[pawn.ThingID + packMule.ThingID] = true;
+                MapData.PawnPackAnimalFollowing[prospector.ThingID + packMule.ThingID] = true;
             });
+            // TODO feed the animal?
+        }
 
-            var toils = __result.ToList();
-            toils.Insert(0, t2);
-            toils.Insert(0, t1);
-            __result = toils.AsEnumerable();
+        private static Toil TalkToAnimalToil(TargetIndex index)
+        {
+            var toil = new Toil();
+            toil.initAction = delegate
+            {
+                Pawn actor = toil.GetActor();
+                var recipient = (Pawn)(Thing)actor.CurJob.GetTarget(index);
+                actor.interactions.TryInteractWith(recipient, InteractionDefOf.AnimalChat);
+            };
+            toil.defaultCompleteMode = ToilCompleteMode.Delay;
+            toil.defaultDuration = 270;
+            return toil;
         }
     }
 }
