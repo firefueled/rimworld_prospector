@@ -48,7 +48,7 @@ namespace Rimworld_Prospector
 
             // TODO figure out why this is needed
             if (MapData.Designations == null)
-                MapData.Designations = new HashSet<IntVec3>();
+                MapData.Designations = new List<IntVec3>();
 
             MapData.Designations.Remove(__instance.Position);
 

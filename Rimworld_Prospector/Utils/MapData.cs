@@ -12,7 +12,7 @@ namespace Rimworld_Prospector
             GiveJobDoneTracker = new Dictionary<string, bool>();
             PawnPackAnimalTracker = new Dictionary<string, Pawn>();
             PawnPackAnimalFollowing = new Dictionary<string, bool>();
-            Designations = new HashSet<IntVec3>();
+            Designations = new List<IntVec3>();
         }
 
         /**
@@ -29,7 +29,7 @@ namespace Rimworld_Prospector
          * The list of mine designations
          * Defines when the prospection is done, when eq 0 
          */
-        public HashSet<IntVec3> Designations;
+        public List<IntVec3> Designations;
 
         /**
          * Pack animal
