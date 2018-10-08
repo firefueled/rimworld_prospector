@@ -12,6 +12,7 @@ namespace Rimworld_Prospector
             GiveJobDoneTracker = new Dictionary<string, bool>();
             PawnPackAnimalTracker = new Dictionary<string, Pawn>();
             PawnPackAnimalFollowing = new Dictionary<string, bool>();
+            Designations = new HashSet<IntVec3>();
         }
 
         /**
@@ -23,6 +24,12 @@ namespace Rimworld_Prospector
          * The list of mined ore 
          */
         public List<Thing> MinedOre;
+
+        /**
+         * The list of mine designations
+         * Defines when the prospection is done, when eq 0 
+         */
+        public HashSet<IntVec3> Designations;
 
         /**
          * Pack animal
@@ -43,6 +50,7 @@ namespace Rimworld_Prospector
             Scribe_Collections.Look(ref MinedOre, "MinedOre", LookMode.Reference);
             Scribe_Collections.Look(ref PawnPackAnimalTracker, "PawnPackAnimalTracker", LookMode.Value, LookMode.Reference, ref ppKeys, ref ppVals);
             Scribe_Collections.Look(ref PawnPackAnimalFollowing, "PawnPackAnimalFollowing", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref Designations, "Designations", LookMode.Value);
         }
     }
 }

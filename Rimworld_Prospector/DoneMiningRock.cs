@@ -33,6 +33,11 @@ namespace Rimworld_Prospector
         private static Pawn prospector;
         public static MapData MapData;
         private static Building dumpSpot;
+        
+        /**
+         * Will cause the prospector to pack the mule one last time before leaving the site
+         */
+        private static bool isProspectionSiteDone;
         private const int MaxGiveJobWait = 30000;
 
         // ReSharper disable once InconsistentNaming
@@ -41,9 +46,17 @@ namespace Rimworld_Prospector
             prospector = pawn;
             MapData = prospector.Map.GetComponent<MapData>();
 
+            // TODO figure out why this is needed
+            if (MapData.Designations == null)
+                MapData.Designations = new HashSet<IntVec3>();
+
+            MapData.Designations.Remove(__instance.Position);
+
             Utils.DeisgnateCellsAround(prospector);
             Utils.AddMinedOreAt(__instance, prospector.Map);
 
+            isProspectionSiteDone = MapData.Designations.Count == 0;
+            
             if (MapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
             {
                 packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
@@ -56,12 +69,11 @@ namespace Rimworld_Prospector
             if (packMule.CurJob.def == JobDriver_SendPackAnimalHome.DefOf) return;
 
             // Can't pack the animal without having a spot to dump stuff onto
-            dumpSpot = Utils.FindClosestDumpSpot(packMule) as Building;
+            dumpSpot = Utils.FindClosestDumpSpot(packMule);
+            
+            // TODO pop a learning helper
             if (dumpSpot == null)
-            {
-                // TODO pop a learning helper
                 return;
-            }
 
             StoreOreInPackMule();
         }
@@ -71,7 +83,10 @@ namespace Rimworld_Prospector
          */
         private static void StoreOreInPackMule()
         {
-            if (!Utils.MaybeListOreToPack(out var oreToPack, packMule)) return;
+            if (isProspectionSiteDone)
+                Log.Message("Leaving the prospection site");
+            
+            if (!Utils.MaybeListOreToPack(out var oreToPack, packMule, isProspectionSiteDone)) return;
             Log.Message("oreToPack " + oreToPack.Count);
 
             Job giveJob = null;

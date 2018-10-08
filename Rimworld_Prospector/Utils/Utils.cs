@@ -65,7 +65,7 @@ namespace Rimworld_Prospector
          * Decide wether there are enough mined ore around to fully pack the mule
          * and return the list of ore to be packed
          */
-        public static bool MaybeListOreToPack(out List<PackableOre> oreToPack, Pawn packAnimal)
+        public static bool MaybeListOreToPack(out List<PackableOre> oreToPack, Pawn packAnimal, bool isLeavingSite = false)
         {
             var mapData = packAnimal.Map.GetComponent<MapData>();
             oreToPack = new List<PackableOre>();
@@ -104,7 +104,7 @@ namespace Rimworld_Prospector
                 }
             }
 
-            return toPackCount >= max;
+            return toPackCount >= max || isLeavingSite;
         }
 
         /**
@@ -166,6 +166,8 @@ namespace Rimworld_Prospector
          */
         public static void DeisgnateCellsAround(Pawn prospector)
         {
+            var mapData = prospector.Map.GetComponent<MapData>();
+
             // A cell grid around the mining pawn covering an area two cells away from it
             var cellsAround = GenAdj.CellsOccupiedBy(prospector.Position, prospector.Rotation, new IntVec2(5, 5));
             var dm = new Designator_Mine();
@@ -181,8 +183,11 @@ namespace Rimworld_Prospector
                     CanReach(prospector, cell)
                 )
                 {
-                    // "Order" the cell to be mined
+                    // Designate the cell to be mined
                     dm.DesignateSingleCell(cell);
+                    
+                    // Save each designation
+                    mapData.Designations.Add(cell);
                 }
             }
         }
