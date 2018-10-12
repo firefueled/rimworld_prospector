@@ -78,11 +78,18 @@ namespace Rimworld_Prospector
             var max =
                 MassUtility.CountToPickUpUntilOverEncumbered(packAnimal, mapData.MinedOre.First()) - 1;
             var toPackCount = 0;
+            
+            // If we have different ore to be hauled, do so one type (def) at a time 
+            var areOreMixed = false; 
 
+            ThingDef firstOreDef = mapData.MinedOre.First().def;
+            
             foreach (Thing ore in mapData.MinedOre)
             {
-                if (ore.def != mapData.MinedOre.First().def)
+                // Sets up hauling ore one type (def) at a time
+                if (ore.def != firstOreDef)
                 {
+                    areOreMixed = true;
                     continue;
                 }
 
@@ -103,8 +110,8 @@ namespace Rimworld_Prospector
                     break;
                 }
             }
-
-            return toPackCount >= max || isLeavingSite;
+            
+            return toPackCount >= max || isLeavingSite || areOreMixed; 
         }
 
         /**
