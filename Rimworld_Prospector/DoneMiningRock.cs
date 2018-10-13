@@ -148,6 +148,7 @@ namespace Rimworld_Prospector
             prospector = __instance.pawn;
             MapData = prospector.Map.GetComponent<MapData>();
 
+            
             if (MapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
             {
                 packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
