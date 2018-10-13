@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using Verse;
@@ -78,6 +79,7 @@ namespace Rimworld_Prospector
             var max =
                 MassUtility.CountToPickUpUntilOverEncumbered(packAnimal, mapData.MinedOre.First()) - 1;
             var toPackCount = 0;
+            var toPackValue = 0f;
             
             // If we have different ore to be hauled, do so one type (def) at a time 
             var areOreMixed = false; 
@@ -98,11 +100,13 @@ namespace Rimworld_Prospector
                 {
                     oreToPack.Add(new PackableOre(ore, ore.stackCount));
                     toPackCount += ore.stackCount;
+                    toPackValue += ore.stackCount * ore.MarketValue;
                 }
                 else if (toPackDiff >= 1)
                 {
                     oreToPack.Add(new PackableOre(ore, toPackDiff));
                     toPackCount += toPackDiff;
+                    toPackValue += toPackDiff * ore.MarketValue;
                 }
 
                 if (toPackCount >= max)
@@ -111,22 +115,26 @@ namespace Rimworld_Prospector
                 }
             }
             
-            return toPackCount >= max || isLeavingSite || areOreMixed; 
+            if (isLeavingSite || areOreMixed)
+                return toPackCount > 0;
+
+            return toPackCount >= max || toPackValue > 3000;
         }
 
         /**
          * Store the ore mined so far for later reference
          */
-        public static void AddMinedOreAt(Thing thingPosition, Map map)
+        public static void AddMinedOreAt(Thing thing, Map map)
         {
             var mapData = map.GetComponent<MapData>();
-            Thing t = map.thingGrid.ThingAt(thingPosition.Position, ThingCategory.Item);
+            Thing t = map.thingGrid.ThingAt(thing.Position, ThingCategory.Item);
             if (t.def == ThingDefOf.Steel ||
                 t.def == ThingDefOf.ComponentIndustrial ||
                 t.def == ThingDefOf.Gold ||
                 t.def == ThingDefOf.Plasteel ||
                 t.def == ThingDefOf.Silver ||
-                t.def == ThingDefOf.Uranium)
+                t.def == ThingDefOf.Uranium ||
+                t.def == DefDatabase<ThingDef>.GetNamed("Jade")) // don't ask
             {
                 mapData.MinedOre.Add(t);
             }
