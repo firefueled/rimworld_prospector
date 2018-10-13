@@ -49,24 +49,21 @@ namespace Rimworld_Prospector
             // TODO figure out why this is needed
             if (MapData.Designations == null)
                 MapData.Designations = new List<IntVec3>();
-
+            
             MapData.Designations.Remove(__instance.Position);
 
             Utils.DeisgnateCellsAround(prospector);
             Utils.AddMinedOreAt(__instance, prospector.Map);
-
-            isProspectionSiteDone = MapData.Designations.Count == 0;
             
+            isProspectionSiteDone = MapData.Designations.Count == 0;
+
             if (MapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
-            {
                 packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
-            }
+
+            if (!Utils.HasAvailablePackMule(packMule))
+                return;
             
             Log.Message("has pack mule? " + packMule);
-            if (packMule == null) return;
-
-            // Do nothing if the only available pack mule is hauling stuff
-            if (packMule.CurJob.def == JobDriver_SendPackAnimalHome.DefOf) return;
 
             // Can't pack the animal without having a spot to dump stuff onto
             dumpSpot = Utils.FindClosestDumpSpot(packMule);
@@ -84,15 +81,18 @@ namespace Rimworld_Prospector
         private static void StoreOreInPackMule()
         {
             if (isProspectionSiteDone)
-                Log.Message("Leaving the prospection site");
+                Log.Message("Prospection site is done");
+
+            var maybeListOreToPack = Utils.MaybeListOreToPack(out var oreToPack, packMule, isProspectionSiteDone);
             
-            if (!Utils.MaybeListOreToPack(out var oreToPack, packMule, isProspectionSiteDone)) return;
+            if (!maybeListOreToPack) return;
+            
             Log.Message("oreToPack " + oreToPack.Count);
 
             Job giveJob = null;
             foreach (PackableOre pOre in oreToPack)
             {
-                giveJob = new Job(JobDriver_GiveToPackAnimalDone.DefOf, pOre.Ore, packMule)
+                giveJob = new Job(JobDriver_GiveToPackAnimalDone.DefOf, pOre.Ore, packMule)    
                 {
                     count = pOre.StackCount
                 };
@@ -197,8 +197,7 @@ namespace Rimworld_Prospector
         {
             yield return Toils_Goto.GotoThing(TargetIndex.C, PathEndMode.Touch);
             yield return Toils_Interpersonal.SetLastInteractTime(TargetIndex.C);
-            // why, oh why?
-            yield return Toils_General.Do(() => Toils_Interpersonal.WaitToBeAbleToInteract(packMule));
+            yield return Toils_Interpersonal.WaitToBeAbleToInteract(prospector);
             yield return Toils_Interpersonal.GotoInteractablePosition(TargetIndex.C);
             yield return TalkToAnimalToil(TargetIndex.C);
             yield return Toils_General.Do(() =>
@@ -219,7 +218,7 @@ namespace Rimworld_Prospector
                 actor.interactions.TryInteractWith(recipient, InteractionDefOf.AnimalChat);
             };
             toil.defaultCompleteMode = ToilCompleteMode.Delay;
-            toil.defaultDuration = 270;
+            toil.defaultDuration = 90;
             return toil;
         }
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 using Verse.AI;
 
@@ -192,6 +193,18 @@ namespace Rimworld_Prospector
                     mapData.Designations.Add(cell);
                 }
             }
+        }
+
+        public static bool HasAvailablePackMule(Pawn packMule)
+        {
+            if (packMule == null) return false;
+            if (packMule.health.State != PawnHealthState.Mobile) return false;
+            if (!packMule.Awake()) return false;
+            if (packMule.Drafted) return false;
+            if (packMule.InMentalState) return false;
+            if (packMule.IsFormingCaravan()) return false;
+
+            return true;
         }
     }
 }
