@@ -163,19 +163,6 @@ namespace Rimworld_Prospector
 
             return dumpSpot;
         }
-
-        public class PackableOre
-        {
-            public Thing Ore { get; }
-            public int StackCount { get; }
-
-            public PackableOre(Thing ore, int stackCount)
-            {
-                Ore = ore;
-                StackCount = stackCount;
-            }
-        }
-
         /**
          * Designate rock ore cells around the player for mining
          */

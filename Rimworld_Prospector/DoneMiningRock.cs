@@ -90,7 +90,7 @@ namespace Rimworld_Prospector
             Log.Message("oreToPack " + oreToPack.Count);
 
             Job giveJob = null;
-            foreach (Utils.PackableOre pOre in oreToPack)
+            foreach (PackableOre pOre in oreToPack)
             {
                 giveJob = new Job(JobDriver_GiveToPackAnimalDone.DefOf, pOre.Ore, packMule)
                 {
