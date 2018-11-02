@@ -31,7 +31,7 @@ namespace Rimworld_Prospector
     {
         private static Pawn packMule;
         private static Pawn prospector;
-        public static MapData MapData;
+        private static MapData MapData;
         private static Building dumpSpot;
         
         /**
@@ -52,7 +52,7 @@ namespace Rimworld_Prospector
             
             MapData.Designations.Remove(__instance.Position);
 
-            Utils.DeisgnateCellsAround(prospector);
+            Utils.DesignateCellsAround(prospector);
             Utils.AddMinedOreAt(__instance, prospector.Map);
             
             isProspectionSiteDone = MapData.Designations.Count == 0;
@@ -87,8 +87,6 @@ namespace Rimworld_Prospector
             
             if (!maybeListOreToPack) return;
             
-            Log.Message("oreToPack " + oreToPack.Count);
-
             Job giveJob = null;
             foreach (PackableOre pOre in oreToPack)
             {
@@ -103,7 +101,7 @@ namespace Rimworld_Prospector
             sendPackAnimalWorker.DoWork += WaitAndSendPackAnimal;
 
             // only wait for the last job
-            Log.Message("prostector " + prospector + " job: " + giveJob);
+            Log.Message("Prospector " + prospector + " is packing the mule");
             MapData.GiveJobDoneTracker.Add(prospector.ThingID + giveJob?.loadID, false);
             sendPackAnimalWorker.RunWorkerAsync(giveJob);
         }
@@ -118,19 +116,17 @@ namespace Rimworld_Prospector
             var trackerKey = prospector.ThingID + job.loadID;
             var isGiveJobDone = MapData.GiveJobDoneTracker[trackerKey];
 
-            Log.Message("isGiveJobDone " + isGiveJobDone);
             while (!isGiveJobDone && (DateTime.Now - starTime).Milliseconds < MaxGiveJobWait)
             {
                 Thread.Sleep(250);
                 isGiveJobDone = MapData.GiveJobDoneTracker[trackerKey];
-                Log.Message("isGiveJobDone " + isGiveJobDone);
             }
 
             MapData.GiveJobDoneTracker.Remove(trackerKey);
 
             if (!isGiveJobDone) return;
-            Log.Message("jobdonemaybe");
 
+            Log.Message("Prospector " + prospector + " is done packing the mule");
             var packJob = new Job(JobDriver_SendPackAnimalHome.DefOf, dumpSpot);
             packMule.jobs.jobQueue.EnqueueFirst(packJob);
         }
@@ -177,7 +173,7 @@ namespace Rimworld_Prospector
             if (isAnimalFollowing)
                 return;
 
-            Log.Message("Making pack mule follow prospector");
+            Log.Message("Making pack mule follow Prospector " + prospector);
             
             // interact with the animal and set follow field work before executing job
             __instance.job.targetC = packMule;

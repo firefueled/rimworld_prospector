@@ -32,7 +32,7 @@ namespace Rimworld_Prospector.Jobs
         public override string GetReport()
         {
             Log.Message("Getting Report");
-            return "Dumping mined stuff donto the dump site";
+            return "Dumping mined stuff onto the dump site";
         }
 
         public static readonly JobDef DefOf = DefDatabase<JobDef>.GetNamed("Prospector_JobDriver_SendPackAnimalHome");

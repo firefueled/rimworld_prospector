@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using RimWorld.Planet;
@@ -19,43 +18,45 @@ namespace Rimworld_Prospector
         }
 
         /**
-         * Wether a mine "Order" hasn't been placed on the cell yet
+         * Whether a mine "Order" hasn't been placed on the cell yet
          */
-        public static bool HasntBeenDesignatedYet(Designator dm, IntVec3 cell)
+        private static bool HasntBeenDesignatedYet(Designator dm, IntVec3 cell)
         {
             return dm.CanDesignateCell(cell).Accepted;
         }
 
         /**
-         * Wether the Thing is a rock with mineable resources
+         * Whether the Thing is a rock with mineable resources
          */
-        public static bool IsResourceRock(ThingDef def)
+        private static bool IsResourceRock(ThingDef def)
         {
             return def?.building != null && def.building.isResourceRock;
         }
 
         /**
-         * Wether the pawn can reach the cell (Rock) to the point of being able to touch it,
+         * Whether the pawn can reach the cell (Rock) to the point of being able to touch it,
          * instead of standing on it
          */
-        public static bool CanReach(Pawn pawn, IntVec3 cell)
+        private static bool CanReach(Pawn pawn, IntVec3 cell)
         {
             return pawn.CanReach(cell, PathEndMode.Touch, Danger.None);
         }
 
+        /**
+         * Finds the currently assigned pack animal or searches for an usable one
+         * Returns whether it found any and associates the animal to the prospector, if it did  
+         */
         public static bool FindAvailablePackAnimal(Pawn prospector)
         {
             var mapData = prospector.Map.GetComponent<MapData>();
-
+            
             if (mapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
                 return true;
 
             // Find a pack animal that's close by, if it exists
-            foreach (Pawn p in prospector.Map.mapPawns.SpawnedPawnsInFaction(prospector.Faction))
+            foreach (Pawn p in PawnUtility.SpawnedMasteredPawns(prospector))
             {
-                if (p.playerSettings.Master != prospector) continue;
                 if (!p.RaceProps.packAnimal) continue;
-
                 mapData.PawnPackAnimalTracker.Add(prospector.ThingID, p);
                 return true;
             }
@@ -64,7 +65,7 @@ namespace Rimworld_Prospector
         }
 
         /**
-         * Decide wether there are enough mined ore around to fully pack the mule
+         * Decide whether there are enough mined ore around to pack the mule
          * and return the list of ore to be packed
          */
         public static bool MaybeListOreToPack(out List<PackableOre> oreToPack, Pawn packAnimal, bool isLeavingSite = false)
@@ -79,7 +80,13 @@ namespace Rimworld_Prospector
 
             var max =
                 MassUtility.CountToPickUpUntilOverEncumbered(packAnimal, mapData.MinedOre.First()) - 1;
+            
+            // this is used to indicate when there are enough ore around to pack
+            // maximizing the space available on the pack mule
             var toPackCount = 0;
+            
+            // If the ore are more valuable than massive, this will be used as an indication of
+            // when there are enough value around to pack
             var toPackValue = 0f;
             
             // If we have different ore to be hauled, do so one type (def) at a time 
@@ -155,19 +162,19 @@ namespace Rimworld_Prospector
             foreach (Building spot in dumpSpots)
             {
                 var distanceToSquared = spot.Position.DistanceToSquared(pawn.Position);
-                if (dumpSpot == null || distanceToSquared < minDist)
-                {
-                    dumpSpot = spot;
-                    minDist = distanceToSquared;
-                }
+                if (dumpSpot != null && distanceToSquared >= minDist) continue;
+                
+                dumpSpot = spot;
+                minDist = distanceToSquared;
             }
 
             return dumpSpot;
         }
+        
         /**
          * Designate rock ore cells around the player for mining
          */
-        public static void DeisgnateCellsAround(Pawn prospector)
+        public static void DesignateCellsAround(Pawn prospector)
         {
             var mapData = prospector.Map.GetComponent<MapData>();
 
@@ -179,19 +186,19 @@ namespace Rimworld_Prospector
             {
                 // Find out what Thing is on the cell
                 Thing thing = prospector.Map.thingGrid.ThingAt(cell, ThingCategory.Building);
-                if (
-                    thing != null && 
-                    IsResourceRock(thing.def) && 
-                    HasntBeenDesignatedYet(dm, cell) && 
-                    CanReach(prospector, cell)
-                )
+                if (thing == null ||
+                    !IsResourceRock(thing.def) ||
+                    !HasntBeenDesignatedYet(dm, cell) ||
+                    !CanReach(prospector, cell))
                 {
-                    // Designate the cell to be mined
-                    dm.DesignateSingleCell(cell);
-                    
-                    // Save each designation
-                    mapData.Designations.Add(cell);
+                    continue; 
                 }
+                
+                // Designate the cell to be mined
+                dm.DesignateSingleCell(cell);
+                    
+                // Save each designation
+                mapData.Designations.Add(cell);
             }
         }
 
