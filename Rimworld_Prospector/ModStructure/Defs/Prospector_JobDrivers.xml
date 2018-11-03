@@ -27,12 +27,18 @@
     <JobDef>
         <defName>Prospector_JobDriver_SendPackAnimalHome</defName>
         <driverClass>Rimworld_Prospector.Jobs.JobDriver_SendPackAnimalHome</driverClass>
-        <reportString>prospecting ore.</reportString>
+        <reportString>sending animal home'.</reportString>
     </JobDef>
     
     <JobDef>
         <defName>Prospector_JobDriver_GiveToPackAnimalDone</defName>
         <driverClass>Rimworld_Prospector.Jobs.JobDriver_GiveToPackAnimalDone</driverClass>
-        <reportString>prospecting ore.</reportString>
+        <reportString>packing animal with ore.</reportString>
+    </JobDef>
+    
+    <JobDef>
+        <defName>Prospector_JobDriver_MakePackAnimalFollow</defName>
+        <driverClass>Rimworld_Prospector.Jobs.JobDriver_MakePackAnimalFollow</driverClass>
+        <reportString>making animal follow.</reportString>
     </JobDef>
 </Defs>
