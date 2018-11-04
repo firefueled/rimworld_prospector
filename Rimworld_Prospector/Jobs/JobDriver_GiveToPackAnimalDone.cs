@@ -13,28 +13,18 @@ namespace Rimworld_Prospector.Jobs
      */
     public class JobDriver_GiveToPackAnimalDone : JobDriver_GiveToPackAnimal
     {
+        private MapData MapData => pawn.Map.GetComponent<MapData>();
+
         public static readonly JobDef DefOf = DefDatabase<JobDef>.GetNamed("Prospector_JobDriver_GiveToPackAnimalDone");
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            var mapData = pawn.Map.GetComponent<MapData>();
-
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.ClosestTouch);
             yield return Toils_Haul.StartCarryThing(TargetIndex.A);
             yield return Toils_Goto.GotoThing(TargetIndex.B, PathEndMode.Touch)
                 .FailOnDespawnedNullOrForbidden(TargetIndex.B);
-            yield return GiveToCarrierAsMuchAsPossibleToil();
-
-            yield return Toils_General.Do(() =>
-            {
-                mapData.MinedOre.Remove(TargetThingA);
-                mapData.GiveJobDoneTracker[pawn.ThingID + job.loadID] = true;
-            });
-        }
-
-        private Toil GiveToCarrierAsMuchAsPossibleToil()
-        {
-            return new Toil
+            
+            yield return new Toil
             {
                 initAction = delegate
                 {
@@ -52,6 +42,12 @@ namespace Rimworld_Prospector.Jobs
                     }
                 }
             };
+
+            yield return Toils_General.Do(() =>
+            {
+                MapData.MinedOre.Remove(TargetThingA);
+                MapData.GiveJobDoneTracker[pawn.ThingID + job.loadID] = true;
+            });
         }
     }
 }

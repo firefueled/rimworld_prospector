@@ -179,6 +179,7 @@ namespace Rimworld_Prospector
     {
         private static bool Prefix(Pawn pawn, Thing t, bool forced, ref bool __result)
         {
+            __result = false;
             if (pawn.Map.designationManager.DesignationAt(t.Position, DesignationDefOf.Mine) == null) return false;
             
             var mayBeAccessible = false;

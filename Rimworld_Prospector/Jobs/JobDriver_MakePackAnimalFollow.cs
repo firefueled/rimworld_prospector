@@ -15,9 +15,9 @@ namespace Rimworld_Prospector.Jobs
         
         private static TargetIndex PackAnimalTarget => TargetIndex.B;
         
-        private Pawn Prospector => (Pawn) job.GetTarget(TargetIndex.A).Thing;
-        
         private Pawn PackAnimal => (Pawn) job.GetTarget(PackAnimalTarget).Thing;
+        
+        private MapData MapData => pawn.Map.GetComponent<MapData>();
         
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
@@ -26,39 +26,38 @@ namespace Rimworld_Prospector.Jobs
         
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            var mapData = Prospector.Map.GetComponent<MapData>();
-
             this.FailOnDespawnedNullOrForbidden(PackAnimalTarget);
             this.FailOnDowned(PackAnimalTarget);
             this.FailOnNotCasualInterruptible(PackAnimalTarget);
-            
+
             yield return Toils_Goto.GotoThing(PackAnimalTarget, PathEndMode.Touch);
-            yield return Toils_Interpersonal.SetLastInteractTime(PackAnimalTarget);
-            yield return Toils_Interpersonal.WaitToBeAbleToInteract(Prospector);
+            yield return Toils_Interpersonal.WaitToBeAbleToInteract(pawn);
             yield return Toils_Interpersonal.GotoInteractablePosition(PackAnimalTarget);
-            var toil = new Toil();
-            toil.initAction = delegate
+
+            var toil = new Toil
             {
-                Pawn actor = toil.GetActor();
-                var recipient = (Pawn)(Thing)actor.CurJob.GetTarget(PackAnimalTarget);
-                actor.interactions.TryInteractWith(recipient, InteractionDefOf.AnimalChat);
+                initAction = delegate
+                {
+                    pawn.interactions.TryInteractWith(PackAnimal, InteractionDefOf.AnimalChat);
+                },
+                defaultCompleteMode = ToilCompleteMode.Delay,
+                defaultDuration = 180
             };
-            toil.defaultCompleteMode = ToilCompleteMode.Delay;
-            toil.defaultDuration = 90;
             yield return toil;
+
             yield return Toils_General.Do(() =>
             {
                 PackAnimal.playerSettings.followFieldwork = true;
-                mapData.PawnPackAnimalFollowing[Prospector.ThingID + PackAnimal.ThingID] = true;
+                MapData.PawnPackAnimalFollowing[pawn.ThingID + PackAnimal.ThingID] = true;
             });
             // TODO feed the animal?
         }
 
         public override string GetReport()
         {
-            return "Making animal follow prospector";
+            return "Making animal follow prospector.";
         }
-
+        
         public static readonly JobDef DefOf = DefDatabase<JobDef>.GetNamed("Prospector_JobDriver_MakePackAnimalFollow");
     }
 }
