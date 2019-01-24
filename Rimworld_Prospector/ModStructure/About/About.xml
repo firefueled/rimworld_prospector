@@ -13,5 +13,7 @@
 
     In the future, they plan to use accompanying mules to store mined ores and have them dump the ores back at the home.
   </description>
-  <targetVersion>1.0.2047</targetVersion>
+  <supportedVersions>
+    <li>1.0</li>
+  </supportedVersions>
 </ModMetaData>

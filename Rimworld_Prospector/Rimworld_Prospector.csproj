@@ -65,7 +65,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
-mkdir Prospector
+rmdir Prospector /s/q
+mkdir Prospector\Assemblies\
 xcopy ..\..\ModStructure\* Prospector\ /e/d/y
 move Rimworld_Prospector.dll Prospector\Assemblies\
 move 0Harmony.dll Prospector\Assemblies\
