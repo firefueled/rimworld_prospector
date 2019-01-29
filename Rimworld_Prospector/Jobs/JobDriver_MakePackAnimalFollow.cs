@@ -17,8 +17,6 @@ namespace Rimworld_Prospector.Jobs
         
         private Pawn PackAnimal => (Pawn) job.GetTarget(PackAnimalTarget).Thing;
         
-        private MapData MapData => pawn.Map.GetComponent<MapData>();
-        
         public override bool TryMakePreToilReservations(bool errorOnFailed)
         {
             return pawn.Reserve(TargetLocA, job, 1, -1, null, errorOnFailed);
@@ -48,7 +46,6 @@ namespace Rimworld_Prospector.Jobs
             yield return Toils_General.Do(() =>
             {
                 PackAnimal.playerSettings.followFieldwork = true;
-                MapData.PawnPackAnimalFollowing[pawn.ThingID + PackAnimal.ThingID] = true;
             });
             // TODO feed the animal?
         }

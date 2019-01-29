@@ -11,7 +11,6 @@ namespace Rimworld_Prospector
             MinedOre = new List<Thing>();
             GiveJobDoneTracker = new Dictionary<string, bool>();
             PawnPackAnimalTracker = new Dictionary<string, Pawn>();
-            PawnPackAnimalFollowing = new Dictionary<string, bool>();
             Designations = new List<IntVec3>();
         }
 
@@ -36,11 +35,6 @@ namespace Rimworld_Prospector
          */
         public Dictionary<string, Pawn> PawnPackAnimalTracker;
 
-        /**
-         * Tracks the pack animals told to follow a prospector
-         */
-        public Dictionary<string, bool> PawnPackAnimalFollowing;
-
         private List<string> ppKeys;
         private List<Pawn> ppVals;
 
@@ -49,7 +43,6 @@ namespace Rimworld_Prospector
             Scribe_Collections.Look(ref GiveJobDoneTracker, "GiveJobDoneTracker", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref MinedOre, "MinedOre", LookMode.Reference);
             Scribe_Collections.Look(ref PawnPackAnimalTracker, "PawnPackAnimalTracker", LookMode.Value, LookMode.Reference, ref ppKeys, ref ppVals);
-            Scribe_Collections.Look(ref PawnPackAnimalFollowing, "PawnPackAnimalFollowing", LookMode.Value, LookMode.Value);
             Scribe_Collections.Look(ref Designations, "Designations", LookMode.Value);
         }
     }

@@ -156,15 +156,10 @@ namespace Rimworld_Prospector
             if (PackMule == null)
                 return;
             
-            var isAnimalFollowing = false;
+            var isAnimalFollowing = PackMule.playerSettings.followFieldwork;
 
-            // why, oh why?
-            if (MapData.PawnPackAnimalFollowing == null)
-                MapData.PawnPackAnimalFollowing = new Dictionary<string, bool>();
+            Log.Message("isAnimalFollowing " + isAnimalFollowing);
             
-            if (MapData.PawnPackAnimalFollowing.ContainsKey(pawn.ThingID + PackMule.ThingID))
-                isAnimalFollowing = MapData.PawnPackAnimalFollowing[pawn.ThingID + PackMule.ThingID];
-
             // only allow mining if the pack animal has been told to follow
             if (isAnimalFollowing)
                 return;
