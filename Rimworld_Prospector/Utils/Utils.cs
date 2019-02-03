@@ -49,7 +49,7 @@ namespace Rimworld_Prospector
         public static bool FindAvailablePackAnimal(Pawn prospector)
         {
             var mapData = prospector.Map.GetComponent<MapData>();
-            
+
             if (mapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
                 return true;
 
@@ -126,6 +126,7 @@ namespace Rimworld_Prospector
             if (isLeavingSite || areOreMixed)
                 return toPackCount > 0;
 
+            // TODO Order ore from closest to farthest
             return toPackCount >= max || toPackValue > 3000;
         }
 
@@ -202,7 +203,7 @@ namespace Rimworld_Prospector
             }
         }
 
-        public static bool HasAvailablePackMule(Pawn packMule)
+        public static bool IsPackMuleAvailable(Pawn packMule)
         {
             if (packMule == null) return false;
             if (packMule.health.State != PawnHealthState.Mobile) return false;

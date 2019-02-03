@@ -56,13 +56,22 @@ namespace Rimworld_Prospector
             
             isProspectionSiteDone = MapData.Designations.Count == 0;
 
+            // Does the current pawn have a pack mule?
             if (MapData.PawnPackAnimalTracker.ContainsKey(prospector.ThingID))
+            {
                 packMule = MapData.PawnPackAnimalTracker[prospector.ThingID];
+                Log.Message("Animal found for prospector");
+            }
+            // No animal, so nothing else to do  
+            else
+            {
+                return;
+            }
 
-            if (!Utils.HasAvailablePackMule(packMule))
+            if (!Utils.IsPackMuleAvailable(packMule))
                 return;
             
-            Log.Message("has pack mule? " + packMule);
+            Log.Message("Pawn [" + prospector + "] has pack mule [" + packMule + "]");
 
             // Can't pack the animal without having a spot to dump stuff onto
             dumpSpot = Utils.FindClosestDumpSpot(packMule);
@@ -147,14 +156,21 @@ namespace Rimworld_Prospector
             }
             else
             {
+                Log.Message("No animal following [" + pawn + "]");
                 if (Utils.FindAvailablePackAnimal(pawn))
                 {
+                    Log.Message("Found an animal");
                     PackMule = MapData.PawnPackAnimalTracker[pawn.ThingID];
                 }
+                else
+                {
+                    Log.Message("No animal available for [" + pawn + "]");
+                    Log.Message("__result: " + __result);
+                    return;
+                }
             }
-
-            if (PackMule == null)
-                return;
+            
+            Log.Message("Animal found for prospector [" + pawn + "]");
             
             var isAnimalFollowing = PackMule.playerSettings.followFieldwork;
 
@@ -164,7 +180,7 @@ namespace Rimworld_Prospector
             if (isAnimalFollowing)
                 return;
 
-            Log.Message("Make animal follow");
+            Log.Message("Make animal follow prospector");
             __result = new Job(JobDriver_MakePackAnimalFollow.DefOf, pawn, PackMule);
         }
     }
